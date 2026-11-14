@@ -3,7 +3,7 @@
   "name": "sekhmet-home-dashboard",
   "main": "cloudflare-worker.mjs",
   "compatibility_date": "2026-11-14",
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
   "assets": {
     "directory": "./cloudflare-dist/public",

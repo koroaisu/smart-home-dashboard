@@ -1,6 +1,6 @@
 # CloudflareでiPad単体のGoogleカレンダー連携を動かす
 
-更新：2026-11-14。Cloudflareへの切替準備とローカル検証まで完了。Cloudflareアカウント登録と開発環境の認証は完了。Google Cloud OAuthクライアント作成、本番Access設定・デプロイ・実Google接続は未実施。
+更新：2026-11-15。Cloudflare Accessの本人限定ポリシーとアプリを保存し、WorkerのURLを有効化済み。未認証リクエストの保護を確認。本人ログイン後のダッシュボード表示を本人が確認済み。Google Cloudプロジェクト作成とCalendar API有効化まで完了。OAuth同意画面作成まで完了。Web OAuthクライアントを作成し、GoogleクライアントID・シークレット・Cookie暗号鍵をCloudflare Secretsへ登録済み。GoogleアプリはTestingで、初回接続と長期利用向けの本番設定は未完了。
 
 ## 構成
 
@@ -16,11 +16,11 @@ PCの起動や独自ドメインの購入は不要な構成。以前のSitesは�
 
 ## 別環境でのCloudflareアカウント準備
 
-[Cloudflareのアカウント登録](https://dash.cloudflare.com/sign-up)で無料アカウントを作り、メール認証を完了してログインする。登録時のパスワード・確認コード・規約への同意は本人が行う。クレジットカードや有料プランは今回の構成に追加しない。
+[Cloudflareのアカウント登録](https://dash.cloudflare.com/sign-up)で無料アカウントを作り、メール認証を完了してログインする。登録時のパスワード・確認コード・規約への同意は本人が行う。有料プランは契約しない。ただしZero Trust Freeの初回有効化でも支払い方法・請求先の登録が必要。2026-11-14、公式資料と実際の無料プラン登録画面で確認。カード情報等は本人がブラウザで入力する。
 
 ## Cloudflareへの準備済みファイル
 
-- `wrangler.jsonc`：WorkerとStatic Assetsの構成。初期状態は`workers_dev:false`・`preview_urls:false`で閲覧用URLを有効にしない。
+- `wrangler.jsonc`：WorkerとStatic Assetsの構成。初回構築時は`workers_dev:false`・`preview_urls:false`。現在はAccess設定後に`workers_dev:true`へ変更済み。プレビューURLは無効のまま。
 - `cloudflare-worker.mjs`：画像・HTML・APIのすべてでAccessの署名検証を行う。
 - `cloudflare-access.mjs`：公式例と同じ`jose`で署名・有効期限・発行元・アプリのaudience・本人メールアドレスを検証。メールヘッダーだけでは信用しない。
 - `scripts/build-cloudflare.mjs`：必要な35ファイルだけを`cloudflare-dist/public`に出力。秘密値・ローカルデータ・旧資料を含めない。
@@ -30,7 +30,7 @@ PCの起動や独自ドメインの購入は不要な構成。以前のSitesは�
 
 ## 登録後の作業順序
 
-1. `wrangler login`で本人のアカウントへCLIを接続し、Freeプランを確認する。
+1. `wrangler login`で本人のアカウントへCLIを接続し、Freeプランを確認する。Zero Trust Freeも別途有効化する。Workers認証とAccessの有効化は別の手続き。
 2. 閲覧URLを無効にしたまま初回Workerを作成する。
 3. Cloudflare AccessでWorker全体を保護し、許可するメールを本人だけに設定する。チームドメイン・アプリのAUDを確認する。
 4. 下表のAccess設定をSecretsへ登録する。未設定・無認証の場合、Workerは画面もAPIも拒否する。
@@ -95,6 +95,41 @@ npm run dev:cloudflare
 - [Workers料金](https://developers.cloudflare.com/workers/platform/pricing/)
 - [Static Assets](https://developers.cloudflare.com/workers/static-assets/)
 - [Cloudflare Access](https://developers.cloudflare.com/workers/configuration/cloudflare-access/)
+- [Zero Trust初期登録・支払い情報の要件](https://developers.cloudflare.com/cloudflare-one/setup/)
 - [JWTの検証](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/)
 - [Google WebサーバーOAuth](https://developers.google.com/identity/protocols/oauth2/web-server)
 - [Google更新用トークンの失効](https://developers.google.com/identity/protocols/oauth2#expiration)
+
+## 2026-11-15の進捗
+
+Zero Trust Freeの登録完了を本人の回答と管理画面で確認。Worker sekhmet-home-dashboardを初回アップロードした（バージョン4777e9db-bf64-46ed-aedd-d749d2fdd8c3）。workers_dev:false・preview_urls:falseを維持し、CLIもNo targets deployedを返した。閲覧用URLはまだ有効化していない。MCP接続は最小権限のためAccess設定の参照・編集には追加承認が必要。
+
+### 開発用MCPの権限更新
+
+2026-11-15、本人承認によりMCPのAccessアプリ・ポリシー編集、組織・認証方法編集、Workersスクリプト読み取りを追加。OAuth成功をCLIで確認済み。スコープ名はworkers-scripts.read、access.write、access-acct.write（user:read等の基本スコープとは区切り文字が異なる）。読み込み済みのMCP接続には旧トークンが残ることがあるため、その場合は接続を再読込する。権限をもう一度付与する必要はない。
+
+## 2026-11-15：本人限定URLを有効化
+
+Accessアプリ「Sekhmet Home Dashboard」を作成し、本人の登録メール1件だけをAllowにした再利用可能なポリシーを関連付けた。対象は専用Workerの本番・プレビューURLと本番の完全ホスト名。アプリのセッション期間は1か月（上位のセッション期限が優先）。ログイン方法はCloudflareアカウント。
+
+WorkerのSecretsにAccess発行元・AUD・本人メール・公開originを登録後、workers_dev:trueで反映。バージョン4ba2ed52-b2a1-4dce-91da-ba0625a04347。未認証の /・/figma.html・フォント・/api/calendar/status がすべて302でAccessログインへ転送されること、Access公開鍵が200で取得できることを確認した。本人ログイン後の画面表示・iPad実機は確認待ち。
+
+別のアカウントへ構築するときは、自分のWorkerとAccessアプリを作成してSecretsを設定する。GoogleのクライアントID・シークレット・Cookie暗号鍵はまだ登録していないため、Googleカレンダーは未接続。
+
+## 2026-11-15：Google Cloudの準備
+
+本人がCloudflareログイン後のダッシュボード表示とGoogle Cloud初回利用規約への同意を完了。専用プロジェクトSekhmet Calendar（ID: sekhmet-calendar）を作成し、Google Calendar APIのステータスが有効になったことを確認した。無料トライアル・課金アカウントは申し込んでいない。作成直後は一時的に権限エラーが表示されたが、反映後はAPI画面を正常に開けた。
+
+Google Auth Platformはアプリ名Sekhmet Calendar、対象External、本人のサポート・連絡先メールを入力済み。ユーザーデータポリシー同意と作成は本人に依頼中。OAuthクライアントとGoogleのSecretsはまだ作成・登録していない。
+
+### OAuthクライアントの準備
+
+Google Auth Platformの作成完了を管理画面で確認。Webクライアント名Sekhmet Dashboard Web、承認済みリダイレクトURIは専用Workerの /api/calendar/callback だけを入力。JavaScript生成元は使用しないため空欄。AI搭載エージェントのチェックは付けない。OAuthクライアントの作成とCloudflare Secretsへの認証情報登録は本人の承認待ちで、まだ発行していない。
+
+## 2026-11-15：OAuth認証情報を登録
+
+本人承認後、WebクライアントSekhmet Dashboard Webを作成。JSONのプロジェクトとリダイレクトURIが専用プロジェクト・専用Workerのcallback1件だけであることを検証し、GOOGLE_CLIENT_ID・GOOGLE_CLIENT_SECRET・32バイトから生成したCALENDAR_COOKIE_KEYをWorkerのSecretsへ登録した。secret listで必要な全7項目の存在を確認した。値はGitやチャットに出力していない。ダウンロードした一時JSONはリポジトリ外でWindowsユーザー単位のDPAPI暗号化に置き換え、平文ファイルの不在を確認した。
+
+Google側の公開状態はまだTesting。本人のテストユーザー登録は未実施。長期利用にはProductionへの切替が必要だが、Audienceの公開ボタンはBranding構成完了待ちで無効だった。ホームページURLは補完・保存したが、プライバシーポリシー等の公開情報の用意と確認が残っている。未認証ユーザーへダッシュボードやカレンダーを公開する変更は行わない。初回Google同意・予定取得・長期更新の実動作は未確認。
+
+参考：[Google OAuthポリシー](https://developers.google.com/identity/protocols/oauth2/policies)、[個人利用の確認免除](https://support.google.com/cloud/answer/13464323?hl=en)。個人利用の確認免除と、アプリ情報の設定・公開ステータスは区別する。

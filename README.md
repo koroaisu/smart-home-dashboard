@@ -13,7 +13,7 @@ npm start
 
 **http://127.0.0.1:5173/** を開いてください。Windowsでは `start.cmd` からも起動できます。以前の `/figma.html` も同じUIです。
 
-ローカルサーバーにはこのPCからだけ接続できます。iPad単体で使うCloudflare構成は準備中です。
+ローカルサーバーにはこのPCからだけ接続できます。iPad単体で使うCloudflare配信も用意し、本人限定のログインを設定しています。
 
 ## 機能
 
@@ -32,7 +32,7 @@ UIは確定版です。1440×1080のデザインを画面に合わせて縮小�
 
 ## Googleカレンダー・Cloudflare
 
-読み取り専用のGoogleカレンダー取得、表示中の5分間隔の更新、Cloudflare Accessで本人だけに閲覧を許可する処理を実装しています。**Google OAuth設定・本番デプロイ・実カレンダー接続は未完了**です。
+読み取り専用のGoogleカレンダー取得、表示中の5分間隔の更新、Cloudflare Accessで本人だけに閲覧を許可する処理を実装しています。**Google OAuth設定・実カレンダー接続は未完了**です。Cloudflareへのデプロイと本人限定のAccess設定は完了し、本人ログイン後のダッシュボード表示も確認済みです。
 
 [Googleカレンダー連携の設定](docs/google-calendar-setup.md)を参照してください。設定項目は `.env.example` に記載しています。実際の秘密値はCloudflare Secretsへ設定し、Gitには保存しません。
 
@@ -41,7 +41,7 @@ npm run build:cloudflare
 npm run check:cloudflare
 ```
 
-`check:cloudflare` はデプロイを行わないdry-runです。初期状態では閲覧URLを無効化し、Access設定がなければ画面もAPIも拒否します。
+`check:cloudflare` はデプロイを行わないdry-runです。初回構築では閲覧URLを無効化して準備し、Access設定後に有効化します。現在の構成は本人限定のAccess設定後にURLを有効化済みです。WorkerはAccess設定がなければ画面もAPIも拒否します。
 
 ## 開発と構成
 
