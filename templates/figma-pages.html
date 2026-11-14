@@ -32,7 +32,7 @@
         <section class="paper-panel calendar-panel" aria-label="月のカレンダー"><div class="calendar-toolbar"><button id="calendar-prev" aria-label="前の月">＜</button><h2 id="calendar-month"></h2><button id="calendar-next" aria-label="次の月">＞</button><button id="calendar-today">今日</button></div><div class="calendar-grid" id="calendar-days" role="group" aria-label="日付を選択"></div><div class="calendar-foot"><span>■　予定あり</span><span>週のはじまり：月曜日</span></div></section>
         <section class="paper-panel selected-day-panel" aria-label="選択日の予定"><span class="tag" id="calendar-date-tag">選択日</span><h2 class="day-title" id="calendar-selected"></h2><div id="calendar-agenda" class="panel-scroll"></div><button id="calendar-add-day">＋ この日に予定を追加</button></section>
         <section class="paper-panel upcoming" aria-labelledby="upcoming-title"><h2 id="upcoming-title">これからの予定</h2><div id="calendar-upcoming" class="panel-scroll"></div></section>
-        <section class="paper-panel calendar-storage"><h2>このブラウザに保存</h2><p class="muted">ホームの予定と連動します</p></section>
+        <section class="paper-panel calendar-storage"><h2 id="calendar-source-title">Google未接続</h2><p class="muted" id="calendar-source-status" role="status">端末内の予定を表示中</p><button id="calendar-connection">接続設定</button></section>
       </section>
 
       <section class="interactive-page" id="notifications-screen" aria-label="通知" hidden inert>

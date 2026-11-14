@@ -1,3 +1,4 @@
+import { compareCalendarRows } from './calendar-data.js';
 import { dateKey } from './state.js';
 
 const $ = id => document.getElementById(id);
@@ -24,7 +25,7 @@ const initialNotices = [
 function element(tag, text, className) { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; }
 const timeText = value => `${Math.floor(value/60)}:${String(Math.floor(value%60)).padStart(2,'0')}`;
 
-export function mountPages(state, save, renderHomeTasks, notify, referenceMode) {
+export function mountPages(state, save, renderHomeTasks, notify, referenceMode, googleCalendar) {
   for (const panel of document.querySelectorAll('.interactive-page .paper-panel, .interactive-page .album-art')) {
     const style = getComputedStyle(panel), width = parseFloat(style.width), height = parseFloat(style.height);
     const fill = panel.classList.contains('album-art') ? '#e6dabc' : '#fff7e3';
@@ -89,19 +90,46 @@ export function mountPages(state, save, renderHomeTasks, notify, referenceMode) 
   function changeMonth(delta){const d=new Date(year,month+delta,1);year=d.getFullYear();month=d.getMonth();renderCalendar();}
   $('calendar-prev').onclick=()=>changeMonth(-1);$('calendar-next').onclick=()=>changeMonth(1);$('calendar-today').onclick=()=>{const d=new Date();year=d.getFullYear();month=d.getMonth();selectedDate=dateKey();renderCalendar();};
   function renderCalendar(){
+    renderConnection();
     $('calendar-month').textContent=`${year}年 ${month+1}月`;
+    googleCalendar.setMonth(year, month);
+    const combined = [...state.tasks, ...googleCalendar.events].sort(compareCalendarRows);
     const grid=$('calendar-days');grid.replaceChildren(...['月','火','水','木','金','土','日'].map(s=>element('span',s,'weekday')));
     const first=new Date(year,month,1);const offset=(first.getDay()+6)%7;
-    for(let i=0;i<42;i++){const d=new Date(year,month,i-offset+1), key=dateKey(d), button=element('button',String(d.getDate()));button.classList.toggle('outside',d.getMonth()!==month);button.classList.toggle('sunday',d.getDay()===0);button.classList.toggle('has-tasks',state.tasks.some(t=>t.date===key));button.setAttribute('aria-pressed',String(key===selectedDate));button.setAttribute('aria-label',new Intl.DateTimeFormat('ja-JP',{dateStyle:'full'}).format(d));if(key===dateKey())button.append(element('small','今日'));button.onclick=()=>{selectedDate=key;if(d.getMonth()!==month){year=d.getFullYear();month=d.getMonth();}renderCalendar();};grid.append(button);}
+    for(let i=0;i<42;i++){const d=new Date(year,month,i-offset+1), key=dateKey(d), button=element('button',String(d.getDate()));button.classList.toggle('outside',d.getMonth()!==month);button.classList.toggle('sunday',d.getDay()===0);button.classList.toggle('has-tasks',combined.some(t=>t.date===key));button.setAttribute('aria-pressed',String(key===selectedDate));button.setAttribute('aria-label',new Intl.DateTimeFormat('ja-JP',{dateStyle:'full'}).format(d));if(key===dateKey())button.append(element('small','今日'));button.onclick=()=>{selectedDate=key;if(d.getMonth()!==month){year=d.getFullYear();month=d.getMonth();}renderCalendar();};grid.append(button);}
     $('calendar-selected').textContent=new Intl.DateTimeFormat('ja-JP',{month:'long',day:'numeric',weekday:'long'}).format(new Date(selectedDate+'T12:00:00'));
     $('calendar-date-tag').textContent=selectedDate===dateKey()?'今日':'選択日';
-    const tasks=state.tasks.filter(t=>t.date===selectedDate).sort((a,b)=>a.time.localeCompare(b.time));
-    $('calendar-agenda').replaceChildren(...tasks.map(t=>{const row=element('label','',`calendar-task${t.done?' done':''}`),check=document.createElement('input');check.type='checkbox';check.checked=t.done;check.setAttribute('aria-label',t.title+'を完了');check.onchange=()=>{t.done=check.checked;save();renderHomeTasks();renderCalendar();};row.append(check,element('span',t.time+' '+t.title));return row;}));
+    const tasks=combined.filter(t=>t.date===selectedDate);
+    $('calendar-agenda').replaceChildren(...tasks.map(t=>{if(t.source==='google'){const row=element('div','','calendar-google-task');row.append(element('span',t.time+' '+t.title),element('small',t.calendarName));return row;}const row=element('label','',`calendar-task${t.done?' done':''}`),check=document.createElement('input');check.type='checkbox';check.checked=t.done;check.setAttribute('aria-label',t.title+'を完了');check.onchange=()=>{t.done=check.checked;save();renderHomeTasks();renderCalendar();};row.append(check,element('span',t.time+' '+t.title));return row;}));
     if(!tasks.length){$('calendar-agenda').append(element('p',selectedDate===dateKey()?'今日は予定がありません':'この日は予定がありません'),element('small','自分のペースで過ごしましょう。','calendar-empty-note'));}
-    const upcoming=state.tasks.filter(t=>!t.done&&t.date>=dateKey()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,10);
+    const upcoming=combined.filter(t=>!t.done&&t.date>=dateKey()).slice(0,30);
     $('calendar-upcoming').replaceChildren(...upcoming.map(t=>{const row=element('div','','upcoming-item');row.append(element('small',t.date.slice(5).replace('-','/')+'　'+t.time),element('p',t.title));return row;}));
     if(!upcoming.length)$('calendar-upcoming').append(element('p','これからの予定はありません。','muted'));
   }
+  function renderConnection() {
+    const status = googleCalendar.status;
+    $('calendar-source-title').textContent = status === 'ready' ? 'Googleカレンダー' : status === 'loading' ? '予定を更新中' : status === 'stale' ? '予定の更新待ち' : googleCalendar.connected ? '予定を取得できません' : 'Google未接続';
+    $('calendar-source-status').textContent = status === 'ready' && googleCalendar.updatedAt ? '最終更新 ' + new Intl.DateTimeFormat('ja-JP',{hour:'2-digit',minute:'2-digit'}).format(new Date(googleCalendar.updatedAt)) : status === 'stale' ? '前回取得した予定を表示中' : googleCalendar.connected ? '接続設定で確認できます' : '端末内の予定を表示中';
+  }
+  $('calendar-connection').onclick = () => {
+    showContent('Googleカレンダー', '');
+    const body = $('content-dialog-body');
+    if (!googleCalendar.configured) { body.append(element('p', 'Google連携は準備中です。設定が完了すると、ここから接続できます。')); return; }
+    if (googleCalendar.message) body.append(element('p', googleCalendar.message));
+    if (!googleCalendar.connected) { const connect = element('button','Googleに接続する','pixel-button'); connect.onclick=()=>googleCalendar.connect(); body.append(element('p','Googleの予定を読み取り専用で表示します。'),connect); return; }
+    body.append(element('p','表示するカレンダー（8個まで）'));
+    const checks = [];
+    for (const calendar of googleCalendar.calendars) {
+      const label=element('label',''), check=document.createElement('input'); check.type='checkbox';check.value=calendar.id;check.checked=googleCalendar.selectedIds.includes(calendar.id);checks.push(check);label.append(check,element('span',calendar.name));body.append(label);
+    }
+    const update = element('button','選択を保存して更新','pixel-button');
+    update.onclick=async()=>{update.disabled=true;try{await googleCalendar.select(checks.filter(c=>c.checked).map(c=>c.value));dialog.close();if(googleCalendar.message)notify(googleCalendar.message);}catch(error){notify(error.message);}finally{update.disabled=false;}};
+    const disconnect = element('button','Googleとの接続を解除','pixel-button');
+    disconnect.onclick=async()=>{disconnect.disabled=true;try{const result=await googleCalendar.disconnect();dialog.close();notify(result.revoked?'接続を解除しました。':'この端末の接続を解除しました。Google側の許可はアカウント設定から確認してください。');}catch(error){notify(error.message);}finally{disconnect.disabled=false;}};
+    body.append(update,disconnect);
+  };
+  const localNote=element('p','追加する予定はこの端末に保存します。Googleカレンダーの予定は変更しません。','local-calendar-note');
+  $('task-form').append(localNote);
   $('task-dialog').addEventListener('close',renderCalendar);renderCalendar();
 
   let readIds=new Set(), noticeFilter='すべて', selectedNotice='filter', noticeEnabled=true;

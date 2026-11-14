@@ -1,13 +1,14 @@
+import { handleCalendarRequest } from './calendar-cloud.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { getMedia } from './media.mjs';
-const files = new Map([['/', 'index.html'], ['/index.html', 'index.html'], ['/styles.css', 'styles.css'], ['/app.js', 'app.js'], ['/state.js', 'state.js'], ['/notifications.js','notifications.js'], ['/assets/sekhmet.png','assets/sekhmet.png']]);
+
+const files = new Map([['/', 'index.html'], ['/index.html', 'index.html'], ['/state.js', 'state.js']]);
 files.set('/figma.html', 'figma.html');
-files.set('/figma-home.css', 'figma-home.css');
-files.set('/figma-home.js', 'figma-home.js');
 files.set('/figma-exact.css', 'figma-exact.css');
 files.set('/figma-exact.js', 'figma-exact.js');
 files.set('/figma-pages.js', 'figma-pages.js');
+files.set('/calendar-client.js', 'calendar-client.js');
+files.set('/calendar-data.js', 'calendar-data.js');
 files.set('/figma-pages.css', 'figma-pages.css');
 files.set('/figma-devices.css', 'figma-devices.css');
 files.set('/figma-devices.js', 'figma-devices.js');
@@ -18,25 +19,21 @@ for (const filename of figmaAssets.files) {
   if (!/^[a-zA-Z0-9-]+\.(svg|png)$/.test(filename)) throw Error('Invalid Figma asset filename');
   files.set(`/assets/figma-home/${filename}`, `assets/figma-home/${filename}`);
 }
-files.set('/assets/mockup-pages/music.png', 'assets/mockup-pages/music.png');
-files.set('/assets/mockup-pages/topics.png', 'assets/mockup-pages/topics.png');
-files.set('/assets/mockup-pages/calendar.png', 'assets/mockup-pages/calendar.png');
-files.set('/assets/mockup-pages/notifications.png', 'assets/mockup-pages/notifications.png');
 const types = {ttf:'font/ttf',png:'image/png',svg:'image/svg+xml',html:'text/html; charset=utf-8',css:'text/css; charset=utf-8',js:'text/javascript; charset=utf-8'};
 const port = Number(process.env.PORT || 5173);
 http.createServer(async (req,res) => {
   const url = new URL(req.url,'http://localhost');
-  if (url.pathname === '/api/media') {
-    // Only this local page may read the PC's media metadata.
-    const expectedHost = `127.0.0.1:${port}`;
-    if (req.method !== 'GET' || req.headers.host !== expectedHost ||
-        (req.headers.origin && req.headers.origin !== `http://${expectedHost}`) ||
-        req.headers['sec-fetch-site'] === 'cross-site') {
-      res.writeHead(403);res.end('Forbidden');return;
-    }
-    const data = await getMedia();
-    res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
-    res.end(JSON.stringify(data));return;
+  if (url.pathname.startsWith('/api/calendar/')) {
+    try {
+      const origin = 'http://' + req.headers.host;
+      const request = new Request(new URL(req.url, origin), { method: req.method, headers: req.headers, ...(req.method === 'POST' ? { body: req, duplex: 'half' } : {}) });
+      const response = await handleCalendarRequest(request, process.env);
+      const headers = Object.fromEntries(response.headers);
+      const setCookies = response.headers.getSetCookie();
+      if (setCookies.length) headers['set-cookie'] = setCookies;
+      res.writeHead(response.status, headers);res.end(Buffer.from(await response.arrayBuffer()));
+    } catch { res.writeHead(500, {'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({error:'カレンダーの接続を確認できませんでした。'})); }
+    return;
   }
   const file = files.get(url.pathname);
   if (!file) {res.writeHead(404); res.end('Not found'); return;}

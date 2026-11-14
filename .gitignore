@@ -12,3 +12,11 @@ node_modules/
 Thumbs.db
 __pycache__/
 *.pyc
+
+/cloud-dist/
+
+# Cloudflare local state, secrets, and generated output
+/.wrangler/
+/cloudflare-dist/
+.dev.vars
+.dev.vars.*

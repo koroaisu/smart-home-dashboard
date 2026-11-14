@@ -1,3 +1,5 @@
+import { createCalendarClient } from './calendar-client.js';
+import { compareCalendarRows } from './calendar-data.js';
 import { mountPages } from './figma-pages.js';
 import { deviceDefinitions, dateKey, validDate } from './state.js';
 import { mountDeviceScreen } from './figma-devices.js';
@@ -57,13 +59,22 @@ let lastDay = dateKey();
 function renderTasks() {
   const list = $('task-list');
   list.replaceChildren();
-  const tasks = state.tasks.filter(t => t.date === dateKey()).sort((a,b) => a.time.localeCompare(b.time));
+  const tasks = [...state.tasks, ...googleCalendar.events].filter(t => t.date === dateKey()).sort(compareCalendarRows);
   if (!tasks.length) {
     const title = document.createElement('p'); title.textContent = '今日は予定がありません';
     const sub = document.createElement('small'); sub.textContent = 'ゆっくり過ごしましょう';
     list.append(title, sub);
   }
+  if (googleCalendar.status === 'stale' && tasks.some(t => t.source === 'google')) {
+    const warning = document.createElement('small');warning.className = 'google-source-warning';warning.textContent = 'Googleの予定は更新待ちです';list.append(warning);
+  }
   for (const task of tasks) {
+    if (task.source === 'google') {
+      const row = document.createElement('p'); row.className = 'google-home-task';
+      row.textContent = task.time + ' ' + task.title;
+      row.title = task.calendarName + (googleCalendar.status === 'stale' ? '（更新待ち）' : '');
+      list.append(row); continue;
+    }
     const label = document.createElement('label'); label.className = `task-item${task.done ? ' is-done' : ''}`;
     const check = document.createElement('input'); check.type = 'checkbox'; check.checked = task.done;
     const text = document.createElement('span'); text.textContent = `${task.time} ${task.title}`;
@@ -119,7 +130,9 @@ $('location-form').addEventListener('submit',event=>{event.preventDefault();cons
 const phrases=['今日は、お部屋を整える日にしませんか？','お部屋は快適な状態です。','少しひと息つきませんか？'];let phraseIndex=0;
 $('pet-speak').addEventListener('click',()=>{$('speech-text').textContent=phrases[++phraseIndex%phrases.length];});
 const deviceScreen = mountDeviceScreen(state, persist => { if (persist) save(); renderDevices(); }, notify);
-const pages = mountPages(state, save, renderTasks, notify, referenceMode);
+let pages;
+const googleCalendar = createCalendarClient({ disabled: referenceMode, onChange() { renderTasks(); pages?.renderCalendar(); } });
+pages = mountPages(state, save, renderTasks, notify, referenceMode, googleCalendar);
 const screens = [
   { id: 'home', label: 'ホーム' },
   { id: 'devices', label: 'デバイス' },
@@ -223,3 +236,4 @@ swipeSurface.addEventListener('click', event => {
 window.addEventListener('hashchange', selectFromHash);
 selectFromHash();
 renderDevices();renderTasks();tick();setInterval(tick,1000);
+googleCalendar.init();

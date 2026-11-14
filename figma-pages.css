@@ -74,3 +74,8 @@
 .empty-state{padding:22px 12px;color:var(--muted);font-size:18px;line-height:27px}
 #content-dialog{width:min(640px,calc(100vw - 32px))}#content-dialog-body{white-space:pre-line;line-height:1.8;overflow-wrap:anywhere}#content-dialog-body label{display:flex;gap:16px;align-items:center}#content-dialog-body input{width:24px;min-height:24px;accent-color:var(--line)}
 
+/* Google rows stay separate from local checkable tasks. */
+.agenda #task-list>.google-home-task{font-size:16px;line-height:24px;white-space:normal;margin-bottom:8px;overflow-wrap:anywhere;border-left:3px solid var(--gold);padding-left:8px}
+.calendar-google-task{padding:6px 0 6px 8px;border-left:3px solid var(--gold);border-bottom:1px solid #ded0af;font-size:18px;line-height:27px;overflow-wrap:anywhere}.calendar-google-task small{display:block;font-size:14px;line-height:21px;color:var(--muted)}
+.calendar-storage #calendar-source-title{font-size:21px}.calendar-storage #calendar-source-status{left:45px;top:67px;width:225px;font-size:15px;line-height:23px}.interactive-page #calendar-connection{position:absolute;right:31px;top:64px;width:145px;height:40px;font-size:16px}
+.local-calendar-note{font-size:14px;line-height:1.6;color:var(--muted);margin-top:12px}#content-dialog-body>.pixel-button{margin:16px 12px 0 0}
