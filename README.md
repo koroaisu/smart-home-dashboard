@@ -2,6 +2,12 @@
 
 iPadの横画面で使う、ピクセルアート調のスマートホームダッシュボードです。HTML・CSS・JavaScriptで6画面を構成し、横スワイプと下部タブで切り替えます。
 
+## ダッシュボードを開く
+
+**https://sekhmet-home-dashboard.kouro-tanabe.workers.dev**
+
+iPadのSafariからも開けます。Cloudflare Accessで本人限定にしているため、許可された本人のCloudflareアカウントでログインしてください。
+
 ## 起動
 
 Node.js 22以降とnpmを使用します。
