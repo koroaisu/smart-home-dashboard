@@ -1,0 +1,1 @@
+{"name":"smart-home-dashboard","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"node server.mjs","start":"node server.mjs","test":"node --test","check":"node --check app.js && node --check state.js && node --check server.mjs"}}

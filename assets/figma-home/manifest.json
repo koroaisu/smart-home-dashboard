@@ -1,0 +1,126 @@
+{
+  "fileKey": "KxLlS15yxslAXhKTu13r1e",
+  "nodeId": "4:2",
+  "downloaded": "2026-11-14",
+  "files": [
+    "c167e.svg",
+    "650f0.svg",
+    "d7085.svg",
+    "18e4a.svg",
+    "a7c86.svg",
+    "62e9d.svg",
+    "44255.png",
+    "370bd.svg",
+    "71000.svg",
+    "a738a.svg",
+    "09f9b.svg",
+    "9cae3.svg",
+    "0baaf.svg",
+    "1ef47.svg",
+    "e375b.svg",
+    "34563.svg",
+    "2e391.svg",
+    "b831b.svg",
+    "device-card.svg",
+    "device-card-selected.svg",
+    "device-control.svg",
+    "device-scenes.svg"
+  ],
+  "slots": [
+    {
+      "nodeId": "4:3",
+      "variable": "imgHome1616",
+      "file": "c167e.svg"
+    },
+    {
+      "nodeId": "4:3086",
+      "variable": "imgNesCss",
+      "file": "650f0.svg"
+    },
+    {
+      "nodeId": "4:3099",
+      "variable": "imgNesCss",
+      "file": "d7085.svg"
+    },
+    {
+      "nodeId": "4:3107",
+      "variable": "imgNesCss",
+      "file": "18e4a.svg"
+    },
+    {
+      "nodeId": "4:3128",
+      "variable": "imgNesCss",
+      "file": "a7c86.svg"
+    },
+    {
+      "nodeId": "4:3128",
+      "variable": "img",
+      "file": "62e9d.svg"
+    },
+    {
+      "nodeId": "4:3135",
+      "variable": "img",
+      "file": "44255.png"
+    },
+    {
+      "nodeId": "4:3139",
+      "variable": "imgNesCss",
+      "file": "370bd.svg"
+    },
+    {
+      "nodeId": "4:3139",
+      "variable": "imgAc1616",
+      "file": "71000.svg"
+    },
+    {
+      "nodeId": "4:3139",
+      "variable": "imgLamp1616",
+      "file": "a738a.svg"
+    },
+    {
+      "nodeId": "4:3139",
+      "variable": "imgDevice1616",
+      "file": "09f9b.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgNesPixelBorder",
+      "file": "9cae3.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgHome1616",
+      "file": "c167e.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgDevices1616",
+      "file": "0baaf.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgMusic1616",
+      "file": "1ef47.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgNews1616",
+      "file": "e375b.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgCalendar1616",
+      "file": "34563.svg"
+    },
+    {
+      "nodeId": "4:88",
+      "variable": "imgBell1616",
+      "file": "2e391.svg"
+    },
+    {
+      "nodeId": "4:4190",
+      "variable": "imgNesCss",
+      "file": "b831b.svg"
+    }
+  ]
+}

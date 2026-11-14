@@ -1,0 +1,19 @@
+<section class="design-main devices-screen" id="devices-screen" aria-labelledby="devices-page-title" hidden inert>
+  <h1 id="devices-page-title" tabindex="-1">デバイス</h1>
+  <p class="devices-page-caption">お部屋の家電を、ここから。</p>
+  <p id="devices-page-count" class="devices-page-count">接続中 7台　/　稼働中 2台</p>
+  <div class="room-filters" role="group" aria-label="部屋を選択"><button data-room="living" aria-pressed="true">リビング</button><button data-room="bedroom" aria-pressed="false">寝室</button><button data-room="all" aria-pressed="false">すべて</button></div>
+  <div id="device-cards" class="device-cards" aria-label="家電を選択"></div>
+  <section class="device-control-panel" id="device-control-panel" aria-labelledby="control-title">
+    <img class="panel-art" src="/assets/figma-home/device-control.svg" alt="">
+    <h2 id="control-title">フロアランプ</h2><span id="control-power-badge" class="control-power-badge">ON</span>
+    <p id="control-location" class="control-location">リビング / ソファの横</p><div class="control-rule first"></div>
+    <label id="control-setting-label" for="control-range" class="control-setting-label">明るさ</label>
+    <output id="control-value" class="control-value" for="control-range">70</output><span id="control-unit" class="control-unit">%</span>
+    <div class="control-range-row"><button id="control-minus" aria-label="明るさを下げる">−</button><input id="control-range" type="range" min="0" max="100" value="70" aria-label="明るさ"><button id="control-plus" aria-label="明るさを上げる">＋</button></div>
+    <div id="control-colors" class="control-colors"><p>色温度</p><div role="group" aria-label="色温度"><button data-color="warm" aria-pressed="true">電球色</button><button data-color="neutral" aria-pressed="false">昼白色</button><button data-color="cool" aria-pressed="false">昼光色</button></div></div>
+    <p id="control-description" class="control-description">あたたかい光で、くつろぐ時間。</p><div class="control-rule last"></div>
+    <button id="control-power" class="control-power">電源をオフにする</button>
+  </section>
+  <section class="device-scenes" aria-labelledby="scene-title"><img class="panel-art" src="/assets/figma-home/device-scenes.svg" alt=""><h2 id="scene-title">ワンタッチシーン</h2><div class="scene-buttons" role="group" aria-label="シーンを選択"><div><button data-scene="relax" aria-pressed="true">くつろぐ</button><p>照明をやさしく</p></div><div><button data-scene="sleep" aria-pressed="false">おやすみ</button><p>すべての照明をオフ</p></div><div><button data-scene="away" aria-pressed="false">おでかけ</button><p>家電をまとめてオフ</p></div></div></section>
+</section>

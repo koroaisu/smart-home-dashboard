@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e6dabc">
+  <title>セクメト — Figmaデザイン</title>
+  <link rel="stylesheet" href="/figma-exact.css">
+  <link rel="stylesheet" href="/figma-devices.css">
+  <link rel="stylesheet" href="/figma-pages.css?v=native-v2">
+</head>
+<body>
+  <div class="design-viewport">
+    <div class="design-canvas" data-node-id="4:2">
+      <header class="status-bar" data-node-id="4:3">
+        <button id="location-button" aria-label="場所の表示名を変更"><img src="/assets/figma-home/c167e.svg" alt=""><span id="location-label">横浜市</span></button>
+        <p class="header-weather">晴れ　21℃</p>
+        <p id="header-date">11月10日（火）</p><time id="header-clock">18:20</time>
+      </header>
+      <main class="design-main" id="home-screen" aria-label="ホーム">
+        <section class="outdoor panel" data-node-id="4:3086" aria-labelledby="outdoor-heading">
+          <img class="panel-art" src="/assets/figma-home/650f0.svg" alt="">
+          <h2 id="outdoor-heading">屋外環境</h2>
+          <dl><div class="reading pm"><dt>PM2.5</dt><dd>8.4</dd><span class="unit">µg/m³</span></div><div class="rule r1"></div><div class="reading aqi"><dt>AQI</dt><dd>32</dd></div><div class="rule r2"></div><div class="reading pollen"><dt>花粉</dt><dd>少ない</dd></div></dl>
+        </section>
+        <section class="agenda panel" data-node-id="4:3099" aria-labelledby="agenda-heading">
+          <img class="panel-art" src="/assets/figma-home/d7085.svg" alt="">
+          <h2 id="agenda-heading">予定</h2><button id="add-task" class="pixel-button" aria-label="予定を追加">＋</button>
+          <div id="task-list"><p>今日は予定がありません</p><small>ゆっくり過ごしましょう</small></div>
+        </section>
+        <section class="indoor panel" data-node-id="4:3107" aria-labelledby="indoor-heading">
+          <img class="panel-art" src="/assets/figma-home/18e4a.svg" alt="">
+          <h2 id="indoor-heading">室内環境</h2><span class="comfort">快適</span>
+          <dl><div class="reading temperature"><dt>温度</dt><dd>24.6</dd><span class="unit">℃</span></div><div class="rule r1"></div><div class="reading humidity"><dt>湿度</dt><dd>48</dd><span class="unit">%</span></div><div class="rule r2"></div><div class="reading co2"><dt>CO₂</dt><dd>680</dd><span class="unit">ppm</span></div></dl>
+        </section>
+        <section class="center" aria-label="時計とセクメト">
+          <p id="date" data-node-id="4:3124">11月10日 火曜日</p><time id="clock" data-node-id="4:3125">18:20</time>
+          <p class="weather">晴れ　 気温 21℃</p><p class="weather-range">最高 23℃　/　最低 15℃</p>
+          <div class="speech" data-node-id="4:3128" role="status" aria-live="polite"><img class="panel-art" src="/assets/figma-home/a7c86.svg" alt=""><span class="nameplate"><img src="/assets/figma-home/62e9d.svg" alt=""><span>セクメト</span></span><p id="speech-text">今日は、お部屋を整える日にしませんか？</p></div>
+          <img class="speech-tail" src="/assets/figma-home/b831b.svg" alt="" data-node-id="4:4190">
+          <button id="pet-speak" aria-label="セクメトのひとこと" data-node-id="4:3135"><img src="/assets/figma-home/44255.png" width="196.35" height="258.72" alt="セクメト"></button>
+          <p class="welcome" data-node-id="4:3137">おかえりなさい。</p><p class="room-state" data-node-id="4:3138">お部屋は快適な状態です</p>
+        </section>
+        <aside class="devices panel" data-node-id="4:3139" aria-labelledby="devices-heading">
+          <img class="panel-art" src="/assets/figma-home/370bd.svg" alt=""><h2 id="devices-heading">家電</h2><p id="device-count">2台が稼働中</p>
+          <div id="device-summary"></div>
+        </aside>
+      </main>
+      <section class="design-main devices-screen" id="devices-screen" aria-labelledby="devices-page-title" hidden inert>
+  <h1 id="devices-page-title" tabindex="-1">デバイス</h1>
+  <p class="devices-page-caption">お部屋の家電を、ここから。</p>
+  <p id="devices-page-count" class="devices-page-count">接続中 7台　/　稼働中 2台</p>
+  <div class="room-filters" role="group" aria-label="部屋を選択"><button data-room="living" aria-pressed="true">リビング</button><button data-room="bedroom" aria-pressed="false">寝室</button><button data-room="all" aria-pressed="false">すべて</button></div>
+  <div id="device-cards" class="device-cards" aria-label="家電を選択"></div>
+  <section class="device-control-panel" id="device-control-panel" aria-labelledby="control-title">
+    <img class="panel-art" src="/assets/figma-home/device-control.svg" alt="">
+    <h2 id="control-title">フロアランプ</h2><span id="control-power-badge" class="control-power-badge">ON</span>
+    <p id="control-location" class="control-location">リビング / ソファの横</p><div class="control-rule first"></div>
+    <label id="control-setting-label" for="control-range" class="control-setting-label">明るさ</label>
+    <output id="control-value" class="control-value" for="control-range">70</output><span id="control-unit" class="control-unit">%</span>
+    <div class="control-range-row"><button id="control-minus" aria-label="明るさを下げる">−</button><input id="control-range" type="range" min="0" max="100" value="70" aria-label="明るさ"><button id="control-plus" aria-label="明るさを上げる">＋</button></div>
+    <div id="control-colors" class="control-colors"><p>色温度</p><div role="group" aria-label="色温度"><button data-color="warm" aria-pressed="true">電球色</button><button data-color="neutral" aria-pressed="false">昼白色</button><button data-color="cool" aria-pressed="false">昼光色</button></div></div>
+    <p id="control-description" class="control-description">あたたかい光で、くつろぐ時間。</p><div class="control-rule last"></div>
+    <button id="control-power" class="control-power">電源をオフにする</button>
+  </section>
+  <section class="device-scenes" aria-labelledby="scene-title"><img class="panel-art" src="/assets/figma-home/device-scenes.svg" alt=""><h2 id="scene-title">ワンタッチシーン</h2><div class="scene-buttons" role="group" aria-label="シーンを選択"><div><button data-scene="relax" aria-pressed="true">くつろぐ</button><p>照明をやさしく</p></div><div><button data-scene="sleep" aria-pressed="false">おやすみ</button><p>すべての照明をオフ</p></div><div><button data-scene="away" aria-pressed="false">おでかけ</button><p>家電をまとめてオフ</p></div></div></section>
+</section>
+
+            <section class="interactive-page" id="music-screen" aria-label="音楽" hidden inert>
+        <header class="page-heading"><h1>音楽</h1><p>いつものお部屋に、好きな音を。</p><span class="tag">リビングで再生</span></header>
+        <section class="paper-panel player" aria-label="再生中の曲">
+          <span class="tag">NOW PLAYING</span>
+          <div class="album-art"><p>SEKHMET RADIO</p><img src="/assets/figma-home/44255.png" alt="セクメト"><p>おうち時間　VOL.01</p></div>
+          <h2 id="demo-track-title">夕暮れのリビング</h2><p class="artist">Sekhmet Radio / おうち時間</p>
+          <input class="seek pixel-range" id="demo-seek" type="range" min="0" max="248" value="0" aria-label="再生位置">
+          <div class="time-row"><span id="demo-elapsed">0:00</span><span id="demo-duration">4:08</span></div>
+          <div class="transport"><button id="demo-prev" aria-label="前の曲"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h2v10H3zM13 3v10L6 8z"/></svg></button><button id="demo-play" class="primary" aria-label="再生"></button><button id="demo-next" aria-label="次の曲"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 3h2v10h-2zM3 3l7 5-7 5z"/></svg></button></div>
+        </section>
+        <section class="paper-panel volume-panel" aria-label="音量">
+          <button id="demo-mute" aria-label="ミュート" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7h4l5-4v14l-5-4H2zM14 6h2v8h-2zM18 4h2v12h-2z"/></svg></button>
+          <p class="speaker-name">リビング<small>この端末</small></p>
+          <input class="pixel-range" id="demo-volume" type="range" min="0" max="100" value="35" aria-label="音量"><span id="demo-volume-value">35%</span>
+        </section>
+        <section class="paper-panel playlist" aria-labelledby="playlist-title"><h2 id="playlist-title">おうち時間</h2><p class="muted">5曲 / やさしいデモメロディー</p><div id="demo-playlist"></div></section>
+        <section class="paper-panel mood-panel" aria-labelledby="mood-title"><h2 id="mood-title">気分に合わせて</h2><div class="mood-buttons" role="group" aria-label="音楽の気分"><button data-mood="relax" aria-pressed="true">くつろぐ</button><button data-mood="focus" aria-pressed="false">集中する</button></div><p class="muted" id="demo-mood-note">セクメトのおすすめ</p></section>
+      </section>
+
+      <section class="interactive-page" id="topics-screen" aria-label="トピック" hidden inert>
+        <header class="page-heading"><h1>トピック</h1><p>今日のくらしに、ちょっといいこと。</p><span class="muted">くらしの便り</span></header>
+        <div class="page-tabs" role="group" aria-label="トピックのカテゴリ"><button data-topic-filter="おすすめ" aria-pressed="true">おすすめ</button><button data-topic-filter="ニュース" aria-pressed="false">ニュース</button><button data-topic-filter="くらし" aria-pressed="false">くらし</button><button data-topic-filter="地域" aria-pressed="false">地域</button></div>
+        <section class="paper-panel topic-feature" aria-label="今日のピックアップ"><div id="topic-feature"></div></section>
+        <section class="paper-panel topic-list-panel" aria-label="記事一覧"><div id="topic-list" class="panel-scroll"></div></section>
+        <section class="paper-panel weather-table" aria-labelledby="outing-title"><h2 id="outing-title">お出かけの目安</h2><p class="weather-location muted">横浜市 / 晴れ</p><dl><div><dt>気温</dt><dd>21℃</dd></div><div><dt>空気の状態</dt><dd>良好　AQI 32</dd></div><div><dt>花粉</dt><dd>少ない</dd></div></dl></section>
+        <section class="paper-panel pet-note" aria-label="セクメトのひとこと"><span class="pet-name">セクメト</span><p>夜は冷えそう。<br>あたたかい飲み物はどう？</p></section>
+        <img class="topic-pet" src="/assets/figma-home/44255.png" alt="セクメト"><p class="topic-greeting">今日も、おつかれさま。</p>
+      </section>
+
+      <section class="interactive-page" id="calendar-screen" aria-label="カレンダー" hidden inert>
+        <header class="page-heading"><h1>カレンダー</h1><p>予定を見渡して、毎日をゆったり。</p><button id="calendar-add" class="primary">＋ 予定を追加</button></header>
+        <section class="paper-panel calendar-panel" aria-label="月のカレンダー"><div class="calendar-toolbar"><button id="calendar-prev" aria-label="前の月">＜</button><h2 id="calendar-month"></h2><button id="calendar-next" aria-label="次の月">＞</button><button id="calendar-today">今日</button></div><div class="calendar-grid" id="calendar-days" role="group" aria-label="日付を選択"></div><div class="calendar-foot"><span>■　予定あり</span><span>週のはじまり：月曜日</span></div></section>
+        <section class="paper-panel selected-day-panel" aria-label="選択日の予定"><span class="tag" id="calendar-date-tag">選択日</span><h2 class="day-title" id="calendar-selected"></h2><div id="calendar-agenda" class="panel-scroll"></div><button id="calendar-add-day">＋ この日に予定を追加</button></section>
+        <section class="paper-panel upcoming" aria-labelledby="upcoming-title"><h2 id="upcoming-title">これからの予定</h2><div id="calendar-upcoming" class="panel-scroll"></div></section>
+        <section class="paper-panel calendar-storage"><h2>このブラウザに保存</h2><p class="muted">ホームの予定と連動します</p></section>
+      </section>
+
+      <section class="interactive-page" id="notifications-screen" aria-label="通知" hidden inert>
+        <header class="page-heading"><h1>通知</h1><p>お部屋からのお知らせを、まとめて。</p><button id="notices-read-all">すべて既読にする</button></header>
+        <div class="page-tabs" role="group" aria-label="通知を絞り込む"><button data-notice-filter="すべて" aria-pressed="true">すべて</button><button data-notice-filter="未読" aria-pressed="false">未読 3</button><button data-notice-filter="家電" aria-pressed="false">家電</button><button data-notice-filter="お知らせ" aria-pressed="false">お知らせ</button></div>
+        <section class="paper-panel notice-list-panel" aria-label="通知一覧"><h2>今日</h2><div id="notices-list" class="panel-scroll"></div></section>
+        <section class="paper-panel notification-detail" aria-label="選択した通知"><div id="notice-detail"></div></section>
+        <section class="paper-panel notice-tip"><p>お手入れすると、<br>お部屋の空気も気持ちよく。</p></section>
+        <button id="notice-settings">通知設定</button>
+      </section>
+
+      <footer class="navigation" data-node-id="4:88"><nav aria-label="画面切り替え"><img class="nav-art" src="/assets/figma-home/9cae3.svg" alt="">
+        <button data-screen="0" aria-current="page"><img src="/assets/figma-home/c167e.svg" alt=""><span>ホーム</span></button>
+        <button data-screen="1"><img src="/assets/figma-home/0baaf.svg" alt=""><span>デバイス</span></button>
+        <button data-screen="2"><img src="/assets/figma-home/1ef47.svg" alt=""><span>音楽</span></button>
+        <button data-screen="3"><img src="/assets/figma-home/e375b.svg" alt=""><span>トピック</span></button>
+        <button data-screen="4"><img src="/assets/figma-home/34563.svg" alt=""><span>カレンダー</span></button>
+        <button data-screen="5"><img src="/assets/figma-home/2e391.svg" alt=""><span>通知</span><i class="unread-dot" aria-label="未読あり"></i></button>
+      </nav></footer>
+    </div>
+  </div>
+  <dialog id="task-dialog" aria-labelledby="task-title"><form id="task-form"><div class="dialog-heading"><h2 id="task-title">予定を追加</h2><button type="button" data-close aria-label="閉じる">×</button></div><label>予定<input name="title" maxlength="80" required></label><label>日付<input name="date" type="date" required></label><label>時刻<input name="time" type="time" value="18:00" required></label><button type="submit" class="pixel-button">追加する</button></form></dialog>
+  <dialog id="device-dialog" aria-labelledby="device-title"><div class="dialog-heading"><h2 id="device-title"></h2><button type="button" data-close aria-label="閉じる">×</button></div><button id="device-power" class="pixel-button"></button><label id="device-setting"><span id="device-setting-label"></span><output id="device-value"></output><input id="device-range" type="range"></label></dialog>
+  <dialog id="location-dialog" aria-labelledby="location-title"><form id="location-form"><div class="dialog-heading"><h2 id="location-title">場所</h2><button type="button" data-close aria-label="閉じる">×</button></div><label>表示名<input name="location" maxlength="40" required></label><button type="submit" class="pixel-button">保存する</button></form></dialog>
+  <p id="feedback" role="status" hidden></p>
+  <script type="module" src="/figma-exact.js"></script>
+</body>
+</html>

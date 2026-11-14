@@ -1,0 +1,45 @@
+      <section class="interactive-page" id="music-screen" aria-label="音楽" hidden inert>
+        <header class="page-heading"><h1>音楽</h1><p>いつものお部屋に、好きな音を。</p><span class="tag">リビングで再生</span></header>
+        <section class="paper-panel player" aria-label="再生中の曲">
+          <span class="tag">NOW PLAYING</span>
+          <div class="album-art"><p>SEKHMET RADIO</p><img src="/assets/figma-home/44255.png" alt="セクメト"><p>おうち時間　VOL.01</p></div>
+          <h2 id="demo-track-title">夕暮れのリビング</h2><p class="artist">Sekhmet Radio / おうち時間</p>
+          <input class="seek pixel-range" id="demo-seek" type="range" min="0" max="248" value="0" aria-label="再生位置">
+          <div class="time-row"><span id="demo-elapsed">0:00</span><span id="demo-duration">4:08</span></div>
+          <div class="transport"><button id="demo-prev" aria-label="前の曲"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h2v10H3zM13 3v10L6 8z"/></svg></button><button id="demo-play" class="primary" aria-label="再生"></button><button id="demo-next" aria-label="次の曲"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 3h2v10h-2zM3 3l7 5-7 5z"/></svg></button></div>
+        </section>
+        <section class="paper-panel volume-panel" aria-label="音量">
+          <button id="demo-mute" aria-label="ミュート" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7h4l5-4v14l-5-4H2zM14 6h2v8h-2zM18 4h2v12h-2z"/></svg></button>
+          <p class="speaker-name">リビング<small>この端末</small></p>
+          <input class="pixel-range" id="demo-volume" type="range" min="0" max="100" value="35" aria-label="音量"><span id="demo-volume-value">35%</span>
+        </section>
+        <section class="paper-panel playlist" aria-labelledby="playlist-title"><h2 id="playlist-title">おうち時間</h2><p class="muted">5曲 / やさしいデモメロディー</p><div id="demo-playlist"></div></section>
+        <section class="paper-panel mood-panel" aria-labelledby="mood-title"><h2 id="mood-title">気分に合わせて</h2><div class="mood-buttons" role="group" aria-label="音楽の気分"><button data-mood="relax" aria-pressed="true">くつろぐ</button><button data-mood="focus" aria-pressed="false">集中する</button></div><p class="muted" id="demo-mood-note">セクメトのおすすめ</p></section>
+      </section>
+
+      <section class="interactive-page" id="topics-screen" aria-label="トピック" hidden inert>
+        <header class="page-heading"><h1>トピック</h1><p>今日のくらしに、ちょっといいこと。</p><span class="muted">くらしの便り</span></header>
+        <div class="page-tabs" role="group" aria-label="トピックのカテゴリ"><button data-topic-filter="おすすめ" aria-pressed="true">おすすめ</button><button data-topic-filter="ニュース" aria-pressed="false">ニュース</button><button data-topic-filter="くらし" aria-pressed="false">くらし</button><button data-topic-filter="地域" aria-pressed="false">地域</button></div>
+        <section class="paper-panel topic-feature" aria-label="今日のピックアップ"><div id="topic-feature"></div></section>
+        <section class="paper-panel topic-list-panel" aria-label="記事一覧"><div id="topic-list" class="panel-scroll"></div></section>
+        <section class="paper-panel weather-table" aria-labelledby="outing-title"><h2 id="outing-title">お出かけの目安</h2><p class="weather-location muted">横浜市 / 晴れ</p><dl><div><dt>気温</dt><dd>21℃</dd></div><div><dt>空気の状態</dt><dd>良好　AQI 32</dd></div><div><dt>花粉</dt><dd>少ない</dd></div></dl></section>
+        <section class="paper-panel pet-note" aria-label="セクメトのひとこと"><span class="pet-name">セクメト</span><p>夜は冷えそう。<br>あたたかい飲み物はどう？</p></section>
+        <img class="topic-pet" src="/assets/figma-home/44255.png" alt="セクメト"><p class="topic-greeting">今日も、おつかれさま。</p>
+      </section>
+
+      <section class="interactive-page" id="calendar-screen" aria-label="カレンダー" hidden inert>
+        <header class="page-heading"><h1>カレンダー</h1><p>予定を見渡して、毎日をゆったり。</p><button id="calendar-add" class="primary">＋ 予定を追加</button></header>
+        <section class="paper-panel calendar-panel" aria-label="月のカレンダー"><div class="calendar-toolbar"><button id="calendar-prev" aria-label="前の月">＜</button><h2 id="calendar-month"></h2><button id="calendar-next" aria-label="次の月">＞</button><button id="calendar-today">今日</button></div><div class="calendar-grid" id="calendar-days" role="group" aria-label="日付を選択"></div><div class="calendar-foot"><span>■　予定あり</span><span>週のはじまり：月曜日</span></div></section>
+        <section class="paper-panel selected-day-panel" aria-label="選択日の予定"><span class="tag" id="calendar-date-tag">選択日</span><h2 class="day-title" id="calendar-selected"></h2><div id="calendar-agenda" class="panel-scroll"></div><button id="calendar-add-day">＋ この日に予定を追加</button></section>
+        <section class="paper-panel upcoming" aria-labelledby="upcoming-title"><h2 id="upcoming-title">これからの予定</h2><div id="calendar-upcoming" class="panel-scroll"></div></section>
+        <section class="paper-panel calendar-storage"><h2>このブラウザに保存</h2><p class="muted">ホームの予定と連動します</p></section>
+      </section>
+
+      <section class="interactive-page" id="notifications-screen" aria-label="通知" hidden inert>
+        <header class="page-heading"><h1>通知</h1><p>お部屋からのお知らせを、まとめて。</p><button id="notices-read-all">すべて既読にする</button></header>
+        <div class="page-tabs" role="group" aria-label="通知を絞り込む"><button data-notice-filter="すべて" aria-pressed="true">すべて</button><button data-notice-filter="未読" aria-pressed="false">未読 3</button><button data-notice-filter="家電" aria-pressed="false">家電</button><button data-notice-filter="お知らせ" aria-pressed="false">お知らせ</button></div>
+        <section class="paper-panel notice-list-panel" aria-label="通知一覧"><h2>今日</h2><div id="notices-list" class="panel-scroll"></div></section>
+        <section class="paper-panel notification-detail" aria-label="選択した通知"><div id="notice-detail"></div></section>
+        <section class="paper-panel notice-tip"><p>お手入れすると、<br>お部屋の空気も気持ちよく。</p></section>
+        <button id="notice-settings">通知設定</button>
+      </section>

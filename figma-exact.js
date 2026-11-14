@@ -1,0 +1,225 @@
+import { mountPages } from './figma-pages.js';
+import { deviceDefinitions, dateKey, validDate } from './state.js';
+import { mountDeviceScreen } from './figma-devices.js';
+
+const $ = id => document.getElementById(id);
+// Isolated storage keeps this design prototype from changing the existing dashboard.
+const storageKey = 'sekhmet-figma-exact-v1';
+const referenceMode = new URLSearchParams(location.search).get('reference') === '1';
+const defaultState = () => ({ location: '横浜市', tasks: [], colorTemperatures: { floor: 'warm', ceiling: 'warm' }, devices: Object.fromEntries(deviceDefinitions.map(d => [d.id, { on: ['floor', 'ceiling'].includes(d.id), value: d.value }])) });
+let state = defaultState();
+if (!referenceMode) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey));
+    if (typeof saved?.location === 'string') state.location = saved.location.slice(0, 40);
+    for (const id of ['floor', 'ceiling']) if (['warm', 'neutral', 'cool'].includes(saved?.colorTemperatures?.[id])) state.colorTemperatures[id] = saved.colorTemperatures[id];
+    for (const def of deviceDefinitions) {
+      const d = saved?.devices?.[def.id];
+      if (typeof d?.on === 'boolean') state.devices[def.id].on = d.on;
+      if (Number.isFinite(d?.value)) state.devices[def.id].value = Math.max(def.min, Math.min(def.max, Math.round(d.value)));
+    }
+    if (Array.isArray(saved?.tasks)) state.tasks = saved.tasks.filter(t => typeof t?.title === 'string' && validDate(t.date) && /^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)).slice(0, 100).map(t => ({ ...t, title: t.title.slice(0, 80), done: t.done === true }));
+  } catch { /* A blocked or corrupt browser store should not prevent the design from loading. */ }
+}
+let feedbackTimer;
+function notify(message) {
+  $('feedback').textContent = message;
+  $('feedback').hidden = false;
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => { $('feedback').hidden = true; }, 5000);
+}
+function save() {
+  if (referenceMode) return;
+  try { localStorage.setItem(storageKey, JSON.stringify(state)); }
+  catch { notify('変更を保存できませんでした。'); }
+}
+function fitDesign() {
+  const viewport = window.visualViewport;
+  if (viewport && viewport.scale !== 1) return;
+  const width = viewport?.width || innerWidth;
+  const height = viewport?.height || innerHeight;
+  document.documentElement.style.setProperty('--fit', Math.min(width / 1440, height / 1080));
+}
+fitDesign();
+window.addEventListener('resize', fitDesign);
+window.visualViewport?.addEventListener('resize', fitDesign);
+
+function tick() {
+  if (referenceMode) return;
+  const now = new Date();
+  const time = new Intl.DateTimeFormat('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
+  $('clock').textContent = $('header-clock').textContent = time;
+  $('date').textContent = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'long' }).format(now);
+  $('header-date').textContent = `${now.getMonth()+1}月${now.getDate()}日（${'日月火水木金土'[now.getDay()]}）`;
+  if (lastDay !== dateKey(now)) { lastDay = dateKey(now); renderTasks(); }
+}
+let lastDay = dateKey();
+function renderTasks() {
+  const list = $('task-list');
+  list.replaceChildren();
+  const tasks = state.tasks.filter(t => t.date === dateKey()).sort((a,b) => a.time.localeCompare(b.time));
+  if (!tasks.length) {
+    const title = document.createElement('p'); title.textContent = '今日は予定がありません';
+    const sub = document.createElement('small'); sub.textContent = 'ゆっくり過ごしましょう';
+    list.append(title, sub);
+  }
+  for (const task of tasks) {
+    const label = document.createElement('label'); label.className = `task-item${task.done ? ' is-done' : ''}`;
+    const check = document.createElement('input'); check.type = 'checkbox'; check.checked = task.done;
+    const text = document.createElement('span'); text.textContent = `${task.time} ${task.title}`;
+    check.addEventListener('change', () => { task.done = check.checked; save(); renderTasks(); });
+    label.append(check, text); list.append(label);
+  }
+}
+let selectedDevice = null;
+function deviceStatus(def) {
+  const d = state.devices[def.id];
+  return !d.on ? 'オフ' : `${d.value}${def.unit}`;
+}
+function renderDevices() {
+  const list = $('device-summary'); list.replaceChildren();
+  deviceDefinitions.forEach((def, i) => {
+    const row = document.createElement('button'); row.className = `device-row${state.devices[def.id].on ? ' is-on' : ''}`;
+    row.style.top = `${[123,220,317,414,510,607][i]}px`; row.dataset.device = def.id;
+    row.setAttribute('aria-label', `${def.name}の詳細操作`); row.setAttribute('aria-haspopup','dialog');
+    const icon = document.createElement('img'); icon.className='device-icon'; icon.alt='';
+    icon.src=`/assets/figma-home/${def.id === 'ac' ? '71000' : ['floor','ceiling'].includes(def.id) ? 'a738a' : '09f9b'}.svg`;
+    const name=document.createElement('span');name.className='device-name';name.textContent=def.name;
+    const status=document.createElement('span');status.className='device-status';status.textContent=deviceStatus(def);
+    const power=document.createElement('span');power.className='power-badge';power.textContent=state.devices[def.id].on?'ON':'OFF';
+    row.append(icon,name,status,power);row.addEventListener('click',()=>openDevice(def));list.append(row);
+  });
+  const vacuum=document.createElement('button');vacuum.className='device-row';vacuum.style.top='704px';vacuum.setAttribute('aria-label','掃除機の状態');
+  const icon=document.createElement('img');icon.src='/assets/figma-home/09f9b.svg';icon.alt='';icon.className='device-icon';
+  for (const [className,text] of [['device-name','掃除機'],['device-status','待機'],['power-badge','待機']]) { const span=document.createElement('span');span.className=className;span.textContent=text;vacuum.append(span); }
+  vacuum.prepend(icon);vacuum.addEventListener('click',()=>notify('掃除機は待機中です。'));list.append(vacuum);
+  $('device-count').textContent=`${Object.values(state.devices).filter(d=>d.on).length}台が稼働中`;
+}
+function refreshDeviceDialog() {
+  const d=state.devices[selectedDevice.id];
+  $('device-title').textContent=selectedDevice.name;
+  $('device-power').textContent=d.on?'電源をオフにする':'電源をオンにする';
+  $('device-setting-label').textContent=selectedDevice.setting;
+  $('device-range').min=selectedDevice.min;$('device-range').max=selectedDevice.max;
+  $('device-range').value=d.value;$('device-range').disabled=!d.on;
+  $('device-range').setAttribute('aria-label',selectedDevice.setting);
+  $('device-value').textContent=`${d.value}${selectedDevice.unit}`;
+}
+function openDevice(def) { selectedDevice=def;refreshDeviceDialog();$('device-dialog').showModal(); }
+$('device-power').addEventListener('click',()=>{const d=state.devices[selectedDevice.id];d.on=!d.on;save();refreshDeviceDialog();renderDevices();deviceScreen.render();});
+$('device-range').addEventListener('input',()=>{state.devices[selectedDevice.id].value=Number($('device-range').value);refreshDeviceDialog();renderDevices();deviceScreen.render();});
+$('device-range').addEventListener('change',save);
+document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
+$('device-dialog').addEventListener('close',()=>document.querySelector(`[data-device="${selectedDevice?.id}"]`)?.focus());
+$('add-task').addEventListener('click',()=>{if(state.tasks.length>=100){notify('予定は100件まで追加できます。');return;}const form=$('task-form');form.elements.date.value=dateKey();$('task-dialog').showModal();form.elements.title.focus();});
+$('task-form').addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;const title=form.elements.title.value.trim();if(!title)return;state.tasks.push({id:crypto.randomUUID(),title,date:form.elements.date.value,time:form.elements.time.value,done:false});save();renderTasks();$('task-dialog').close();form.reset();notify('予定を追加しました。');});
+$('location-label').textContent=state.location;
+$('location-button').addEventListener('click',()=>{$('location-form').elements.location.value=state.location;$('location-dialog').showModal();});
+$('location-form').addEventListener('submit',event=>{event.preventDefault();const label=event.currentTarget.elements.location.value.trim();if(!label)return;state.location=label;$('location-label').textContent=label;save();$('location-dialog').close();});
+const phrases=['今日は、お部屋を整える日にしませんか？','お部屋は快適な状態です。','少しひと息つきませんか？'];let phraseIndex=0;
+$('pet-speak').addEventListener('click',()=>{$('speech-text').textContent=phrases[++phraseIndex%phrases.length];});
+const deviceScreen = mountDeviceScreen(state, persist => { if (persist) save(); renderDevices(); }, notify);
+const pages = mountPages(state, save, renderTasks, notify, referenceMode);
+const screens = [
+  { id: 'home', label: 'ホーム' },
+  { id: 'devices', label: 'デバイス' },
+  { id: 'music', label: '音楽' },
+  { id: 'topics', label: 'トピック' },
+  { id: 'calendar', label: 'カレンダー' },
+  { id: 'notifications', label: '通知' },
+];
+let activeScreen = null;
+let slideAnimations = [];
+function selectScreen(index) {
+  const selected = screens[Number(index)] || screens[0];
+  if (selected === activeScreen) return;
+  const previous = activeScreen;
+  const direction = previous && screens.indexOf(selected) < screens.indexOf(previous) ? -1 : 1;
+  slideAnimations.forEach(animation => animation.cancel());
+  slideAnimations = [];
+  activeScreen = selected;
+  for (const screen of screens) {
+    const element = $(screen.id + '-screen');
+    element.hidden = screen !== selected;
+    element.inert = screen !== selected;
+    element.removeAttribute('aria-hidden');
+    element.classList.remove('screen-sliding');
+  }
+  if (previous && !matchMedia('(prefers-reduced-motion: reduce)').matches && $('home-screen').animate) {
+    const outgoing = $(previous.id + '-screen'), incoming = $(selected.id + '-screen');
+    outgoing.hidden = false;
+    outgoing.inert = true;
+    outgoing.setAttribute('aria-hidden', 'true');
+    outgoing.classList.add('screen-sliding'); incoming.classList.add('screen-sliding');
+    const options = { duration: 300, easing: 'cubic-bezier(.22,.61,.36,1)' };
+    const exit = outgoing.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-direction * 1440) + 'px)' }], options);
+    const enter = incoming.animate([{ transform: 'translateX(' + (direction * 1440) + 'px)' }, { transform: 'translateX(0)' }], options);
+    slideAnimations = [exit, enter];
+    Promise.all(slideAnimations.map(animation => animation.finished)).then(() => {
+      if (activeScreen !== selected) return;
+      outgoing.hidden = true;outgoing.removeAttribute('aria-hidden');
+      outgoing.classList.remove('screen-sliding');incoming.classList.remove('screen-sliding');
+      slideAnimations = [];
+    }).catch(() => { /* A newer navigation cancels the previous slide. */ });
+  }
+  document.querySelectorAll('[data-screen]').forEach(button => {
+    if (screens[Number(button.dataset.screen)] === selected) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  document.title = selected.label + ' — セクメト';
+  if (selected.id === 'devices') deviceScreen.render();
+  if (selected.id === 'calendar') pages.renderCalendar();
+}
+function selectFromHash() {
+  const index = screens.findIndex(screen => '#' + screen.id === location.hash);
+  selectScreen(index < 0 ? 0 : index);
+}
+document.querySelectorAll('[data-screen]').forEach(button => button.addEventListener('click', () => {
+  const screen = screens[Number(button.dataset.screen)];
+  if (!screen) return;
+  if (location.hash === '#' + screen.id) selectScreen(button.dataset.screen);
+  else location.hash = screen.id;
+}));
+// Use viewport coordinates: the design canvas is scaled on iPad.
+const swipeSurface = document.querySelector('.design-canvas');
+let swipe = null;
+let ignoreClickUntil = 0;
+swipeSurface.addEventListener('touchstart', event => {
+  swipe = null;
+  if (event.touches.length !== 1 || document.querySelector('dialog[open]')) return;
+  if (event.target.closest('button, input, select, textarea, a, label, .status-bar, .navigation')) return;
+  const touch = event.touches[0];
+  // Leave the screen edges available for Safari's back/forward gestures.
+  if (touch.clientX < 24 || touch.clientX > innerWidth - 24) return;
+  swipe = { id: touch.identifier, x: touch.clientX, y: touch.clientY, started: performance.now(), horizontal: false };
+}, { passive: true });
+swipeSurface.addEventListener('touchmove', event => {
+  if (!swipe) return;
+  if (event.touches.length !== 1) { swipe = null; return; }
+  const touch = event.touches[0];
+  if (touch.identifier !== swipe.id) { swipe = null; return; }
+  const dx = Math.abs(touch.clientX - swipe.x), dy = Math.abs(touch.clientY - swipe.y);
+  if (!swipe.horizontal && dy > 12 && dy > dx) { swipe = null; return; }
+  if (dx > 12 && dx > dy * 1.5) swipe.horizontal = true;
+  if (swipe.horizontal && event.cancelable) event.preventDefault();
+}, { passive: false });
+swipeSurface.addEventListener('touchend', event => {
+  const gesture = swipe;
+  swipe = null;
+  if (!gesture || event.touches.length || performance.now() - gesture.started > 1000) return;
+  const touch = Array.from(event.changedTouches).find(t => t.identifier === gesture.id);
+  if (!touch) return;
+  const dx = touch.clientX - gesture.x, dy = touch.clientY - gesture.y;
+  if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  const current = screens.findIndex(screen => '#' + screen.id === location.hash);
+  const next = Math.max(0, Math.min(screens.length - 1, Math.max(0, current) + (dx < 0 ? 1 : -1)));
+  ignoreClickUntil = performance.now() + 400;
+  location.hash = '#' + screens[next].id;
+}, { passive: true });
+swipeSurface.addEventListener('touchcancel', () => { swipe = null; }, { passive: true });
+swipeSurface.addEventListener('click', event => {
+  if (performance.now() < ignoreClickUntil) { event.preventDefault(); event.stopPropagation(); }
+}, true);
+window.addEventListener('hashchange', selectFromHash);
+selectFromHash();
+renderDevices();renderTasks();tick();setInterval(tick,1000);

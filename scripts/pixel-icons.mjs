@@ -1,0 +1,41 @@
+import fs from 'node:fs';
+const shapes={};
+function draw(name,fn){const cells=new Set();const pixel=(x,y)=>{if(x>=0&&x<16&&y>=0&&y<16)cells.add(`${x},${y}`);};const rect=(x,y,w,h)=>{for(let a=x;a<x+w;a++)for(let b=y;b<y+h;b++)pixel(a,b);};const line=(x,y,x2,y2)=>{const steps=Math.max(Math.abs(x2-x),Math.abs(y2-y));for(let n=0;n<=steps;n++)pixel(Math.round(x+(x2-x)*n/(steps||1)),Math.round(y+(y2-y)*n/(steps||1)));};fn({pixel,rect,line});shapes[name]=[...cells].map(c=>{const [x,y]=c.split(',');return `M${x} ${y}h1v1h-1z`;}).join('');}
+draw('home',({rect,line})=>{line(1,7,7,1);line(7,1,14,8);rect(3,7,2,7);rect(11,7,2,7);rect(4,12,3,2);rect(9,12,3,2);rect(6,8,4,2);rect(6,9,1,5);rect(9,9,1,5);});
+draw('devices',({rect})=>{for(const x of [2,9])for(const y of [2,9]){rect(x,y,5,1);rect(x,y+4,5,1);rect(x,y,1,5);rect(x+4,y,1,5);}});
+draw('music',({rect})=>{rect(6,3,2,9);rect(12,1,2,9);rect(7,2,6,2);rect(2,10,5,3);rect(3,9,3,1);rect(8,9,5,3);rect(9,8,3,1);});
+draw('news',({rect})=>{rect(3,1,10,1);rect(3,13,10,1);rect(3,1,1,13);rect(12,1,1,13);rect(5,3,6,3);rect(5,8,2,1);rect(9,8,2,1);rect(5,10,6,1);});
+draw('calendar',({rect})=>{rect(2,3,12,1);rect(2,13,12,1);rect(2,3,1,11);rect(13,3,1,11);rect(5,1,1,4);rect(10,1,1,4);rect(3,6,10,1);for(const x of [5,8,11])for(const y of [8,11])rect(x,y,1,1);});
+draw('pin',({rect,line})=>{rect(5,1,6,1);rect(3,3,1,5);rect(12,3,1,5);rect(4,2,1,1);rect(11,2,1,1);line(3,8,8,14);line(12,8,8,14);rect(6,4,4,1);rect(6,7,4,1);rect(6,4,1,4);rect(9,4,1,4);});
+draw('sun',({rect,line})=>{rect(5,4,6,1);rect(4,5,1,6);rect(11,5,1,6);rect(5,11,6,1);rect(7,0,2,2);rect(7,14,2,2);rect(0,7,2,2);rect(14,7,2,2);for(const [x,y,x2,y2] of [[2,2,3,3],[12,12,13,13],[12,3,13,2],[2,13,3,12]])line(x,y,x2,y2);});
+for(const name of ['sunrise','sunset'])draw(name,({rect,line})=>{rect(1,12,14,1);rect(4,8,1,3);rect(11,8,1,3);rect(5,6,6,1);rect(5,7,1,1);rect(10,7,1,1);rect(7,0,1,5);if(name==='sunrise'){line(5,2,7,0);line(7,0,9,2);}else{line(5,2,7,4);line(7,4,9,2);}rect(1,8,2,1);rect(13,8,2,1);});
+draw('fullscreen',({rect})=>{for(const x of [2,10])for(const y of [2,10]){rect(x,y===2?2:12,4,2);rect(x===2?2:12,y,2,4);}});
+draw('ac',({rect})=>{rect(1,2,14,1);rect(1,7,14,1);rect(1,2,1,6);rect(14,2,1,6);rect(4,5,8,1);for(const x of [4,7,10]){rect(x,10,1,4);rect(x+1,13,1,2);}});
+draw('floor',({rect})=>{rect(6,1,4,1);rect(5,2,6,2);rect(4,4,8,2);rect(3,6,10,1);rect(7,7,2,7);rect(4,14,8,1);});
+draw('light',({rect,line})=>{rect(2,2,12,1);rect(4,3,8,4);rect(7,9,2,4);line(3,9,1,12);line(12,9,14,12);});
+draw('drop',({rect,line})=>{line(7,1,3,7);line(7,1,12,8);rect(2,8,1,4);rect(12,8,1,4);rect(3,12,1,1);rect(11,12,1,1);rect(4,13,7,1);rect(5,9,1,2);rect(6,11,3,1);});
+draw('fan',({rect})=>{rect(7,6,2,3);rect(7,1,4,4);rect(6,3,2,3);rect(10,7,5,4);rect(9,8,3,2);rect(3,10,5,4);rect(6,9,2,3);rect(1,4,5,4);rect(4,6,3,2);});
+draw('air',({rect})=>{rect(4,1,8,1);rect(3,2,1,12);rect(12,2,1,12);rect(4,14,8,1);for(const y of [4,7,10])rect(5,y,6,1);rect(7,12,2,1);});
+draw('vacuum',({rect})=>{rect(5,1,6,1);rect(3,2,2,1);rect(11,2,2,1);rect(2,3,1,2);rect(13,3,1,2);rect(1,5,1,6);rect(14,5,1,6);rect(2,11,1,2);rect(13,11,1,2);rect(3,13,2,1);rect(11,13,2,1);rect(5,14,6,1);rect(6,4,4,3);rect(6,11,4,1);});
+draw('plus',({rect})=>{rect(7,3,2,10);rect(3,7,10,2);});
+draw('spark',({rect})=>{rect(7,1,2,14);rect(1,7,14,2);rect(5,5,6,6);});
+draw('close',({rect})=>{for(let i=2;i<13;i++){rect(i,i,2,2);rect(14-i,i,2,2);}});
+draw('left',({rect})=>{for(let i=0;i<5;i++){rect(8-i,3+i,2,2);rect(4+i,7+i,2,2);}});
+draw('right',({rect})=>{for(let i=0;i<5;i++){rect(5+i,3+i,2,2);rect(9-i,7+i,2,2);}});
+export const pixelPaths=shapes;
+export const icon=name=>`<svg class="pixel-icon" data-pixel-icon="${name}" viewBox="0 0 16 16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="${shapes[name]}"/></svg>`;
+if(process.argv.includes('--apply')){
+ let html=fs.readFileSync('index.html','utf8');
+ const replaceInside=(pattern,name)=>{html=html.replace(pattern,(all,open,svg)=>open+icon(name));};
+ replaceInside(/(<button id="location-button"[^>]*>)(<svg[\s\S]*?<\/svg>)/,'pin');
+ html=html.replace(/(<button id="fullscreen"[^>]*>)[\s\S]*?<\/button>/,'$1'+icon('fullscreen')+'</button>');
+ replaceInside(/(<div class="weather-condition">)(<svg[\s\S]*?<\/svg>)/,'sun');
+ for(const [i,name] of ['home','devices','music','news','calendar'].entries())replaceInside(new RegExp(`(<button data-page="${i}"[^>]*>)(<svg[\\s\\S]*?<\\/svg>)`),name);
+ for(const [label,name] of [['日の出','sunrise'],['日の入り','sunset']])html=html.replace(new RegExp(`(<dt title="${label}"><span class="sr-only">${label}<\\/span>)(<svg[\\s\\S]*?<\\/svg>)`),'$1'+icon(name));
+ html=html.replace('<nav class="bottom-tabs"','<footer class="app-footer"><nav class="bottom-tabs"').replace('</nav><span id="page-position"','</nav></footer><span id="page-position"');
+ html=html.replace('width=device-width,initial-scale=1','width=device-width,initial-scale=1,viewport-fit=cover').replace(/href="\/styles.css\?[^"]*"/,'href="/styles.css?v=responsive-pixel-1"');fs.writeFileSync('index.html',html);
+ let app=fs.readFileSync('app.js','utf8');app=app.replace(/const deviceIcons=\{[^\n]+\};/,`const deviceIcons=${JSON.stringify(shapes)};`);
+ app=app.replace("icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('fill','none');icon.setAttribute('stroke','currentColor');icon.setAttribute('stroke-width','1.5');","icon.setAttribute('viewBox','0 0 16 16');icon.setAttribute('fill','currentColor');icon.setAttribute('class','pixel-icon');icon.setAttribute('shape-rendering','crispEdges');");
+ app=app.replace("row.append(deviceIcon('air'),name,power,status)","row.append(deviceIcon('vacuum'),name,power,status)");
+ app+=`\n// Follow the visual viewport, including iPad Safari's changing browser chrome.\nfunction fitViewport(){const viewport=window.visualViewport;if(!viewport||viewport.scale===1)document.documentElement.style.setProperty('--app-height',(viewport?.height||window.innerHeight)+'px');}\nfitViewport();window.addEventListener('resize',fitViewport);window.visualViewport?.addEventListener('resize',fitViewport);\nnew ResizeObserver(()=>{pages.scrollTo({left:pageIndex*pages.clientWidth,behavior:'instant'});}).observe(pages);\n`;fs.writeFileSync('app.js',app);
+}
