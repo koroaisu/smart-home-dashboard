@@ -2,6 +2,8 @@
 
 iPadの横画面で使う、ピクセルアート調のスマートホームダッシュボードです。HTML・CSS・JavaScriptで6画面を構成し、横スワイプと下部タブで切り替えます。
 
+2026-11-15、ユーザーが現在のUIを完成版として採用しました。
+
 ## ダッシュボードを開く
 
 **https://sekhmet-home-dashboard.kouro-tanabe.workers.dev**

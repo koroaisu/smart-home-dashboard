@@ -3,8 +3,10 @@
 #home-screen #date{top:30px;font-size:25px;line-height:38px}
 #home-screen #clock{top:68px;font-size:120px;line-height:132px;font-variant-numeric:tabular-nums}
 #home-screen .weather{top:207px;font-size:27px;line-height:40px;display:flex;align-items:center;gap:16px}
-#home-screen .weather>img{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
-#home-screen .weather-range{top:283px;font-size:21px;line-height:31px}
+#home-screen .weather>img{width:auto;height:72px;max-width:110px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+#home-screen .weather-details{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+#home-screen .weather-current{font-size:27px;line-height:40px}
+#home-screen .weather .weather-range{position:static;left:auto;top:auto;transform:none;font-size:18px;line-height:27px}
 #home-screen .panel h2{font-size:23px;line-height:34px}
 #home-screen .devices h2{font-size:25px;line-height:36px}
 #home-screen .reading dt{font-size:20px;line-height:30px}
