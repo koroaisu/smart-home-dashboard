@@ -1,8 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { googleEventRows, compareCalendarRows, readGooglePages } from './calendar-data.js';
+import { googleEventRows, compareCalendarRows, readGooglePages, readGoogleEventColors, calendarEventColors } from './calendar-data.js';
 
 const options = { calendarId: 'example', calendarName: 'テスト', rangeStart: '2026-11-01', rangeEnd: '2026-12-01', timeZone: 'Asia/Tokyo' };
+
+test('Google event colors take priority over calendar color and reject malformed CSS values', () => {
+  const event={id:'color',colorId:'3',start:{date:'2026-11-10'},end:{date:'2026-11-11'}};
+  const config={...options,calendarColor:'#123456',eventColors:{3:{background:'#abcdef'}}};
+  assert.equal(googleEventRows(event,config)[0].color,'#abcdef');
+  assert.equal(googleEventRows({...event,colorId:undefined},config)[0].color,'#123456');
+  assert.equal(googleEventRows(event,{...config,eventColors:{3:{background:'url(https://invalid.example)'}}})[0].color,'#123456');
+  assert.equal(calendarEventColors('#ffffff').foreground,'#000000');
+  assert.equal(calendarEventColors('#000000').foreground,'#ffffff');
+  assert.equal(calendarEventColors('invalid').background,'#e6c16f');
+});
+
+test('palette fetch uses existing read authorization and can fail without hiding events', async () => {
+  const colors=await readGoogleEventColors({accessToken:'fixture-token',fetchImpl:async(url,init)=>{
+    assert.equal(url,'https://www.googleapis.com/calendar/v3/colors');
+    assert.equal(init.headers.Authorization,'Bearer fixture-token');
+    return {ok:true,json:async()=>({event:{1:{background:'#abcdef'}}})};
+  }});
+  assert.equal(colors[1].background,'#abcdef');
+  assert.deepEqual(await readGoogleEventColors({fetchImpl:async()=>({ok:false,status:503})}),{});
+  assert.deepEqual(await readGoogleEventColors({fetchImpl:async()=>{throw Error('offline');}}),{});
+});
 test('all-day events use exclusive ends and stay inside the requested range', () => {
   const event = { id: 'holiday', summary: '連休', start: { date: '2026-10-30' }, end: { date: '2026-11-03' } };
   const rows = googleEventRows(event, options);

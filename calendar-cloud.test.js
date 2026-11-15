@@ -53,14 +53,20 @@ test('cross-origin reads and tampered session cookies are rejected before fetchi
 test('reads return normalized events and metadata without provider tokens', async () => {
   const { session } = await login();
   const calls = [];
-  const fetchImpl = async (url, init) => { calls.push({ url: String(url), init }); return String(url).includes('calendarList') ? response({ items: [{ id: 'primary-id', summary: 'テスト用', primary: true, accessRole: 'owner' }] }) : response({ items: [{ id: 'event', summary: 'テスト予定', start: { date: '2026-11-10' }, end: { date: '2026-11-11' } }] }); };
+  const fetchImpl = async (url, init) => {
+    calls.push({ url: String(url), init });
+    if(String(url).endsWith('/colors'))return response({event:{2:{background:'#112233',foreground:'#ffffff'}}});
+    if(String(url).includes('calendarList'))return response({items:[{id:'primary-id',summary:'テスト用',primary:true,accessRole:'owner',backgroundColor:'#abcdef'}]});
+    return response({items:[{id:'event',summary:'テスト予定',colorId:'2',start:{date:'2026-11-10'},end:{date:'2026-11-11'}}]});
+  };
   const res = await handleCalendarRequest(read(session), env, { fetchImpl });
   const text = await res.text(), data = JSON.parse(text);
   assert.equal(res.status, 200); assert.equal(data.events[0].title, 'テスト予定');
   assert.equal(data.events[0].date, '2026-11-10'); assert.equal(data.events[0].allDay, true);
   assert(!text.includes('fixture-access') && !text.includes('fixture-refresh'));
   assert.equal(res.headers.get('cache-control'), 'private, no-store');
-  assert(calls[1].url.includes('singleEvents=true'));
+  assert.equal(data.events[0].color,'#112233');
+  assert(calls.some(call=>call.url.includes('singleEvents=true')));
 });
 test('expired access tokens refresh in the cloud without browser reconnection', async () => {
   const { session } = await login({ expired: true });

@@ -1,5 +1,5 @@
 import { createCalendarClient } from './calendar-client.js';
-import { compareCalendarRows } from './calendar-data.js';
+import { compareCalendarRows, calendarEventColors } from './calendar-data.js';
 import { mountPages } from './figma-pages.js';
 import { deviceDefinitions, dateKey, validDate } from './state.js';
 import { mountDeviceScreen } from './figma-devices.js';
@@ -71,6 +71,12 @@ function tick() {
   if (lastDay !== dateKey(now)) { lastDay = dateKey(now); renderTasks(); }
 }
 let lastDay = dateKey();
+function colorHomeTask(row,task) {
+  const colors=calendarEventColors(task.color || googleCalendar.calendars.find(c=>c.id===task.calendarId)?.color);
+  row.style.setProperty('--event-color',colors.background);
+  row.style.setProperty('--event-ink',colors.foreground);
+  return row;
+}
 function renderTasks() {
   const list = $('task-list');
   list.replaceChildren();
@@ -85,12 +91,12 @@ function renderTasks() {
   }
   for (const task of tasks) {
     if (task.source === 'google') {
-      const row = document.createElement('p'); row.className = 'google-home-task';
+      const row = colorHomeTask(document.createElement('p'),task); row.className = 'google-home-task';
       row.textContent = task.time + ' ' + task.title;
       row.title = task.calendarName + (googleCalendar.status === 'stale' ? '（更新待ち）' : '');
       list.append(row); continue;
     }
-    const label = document.createElement('label'); label.className = `task-item${task.done ? ' is-done' : ''}`;
+    const label = colorHomeTask(document.createElement('label'),task); label.className = `task-item${task.done ? ' is-done' : ''}`;
     const check = document.createElement('input'); check.type = 'checkbox'; check.checked = task.done;
     const text = document.createElement('span'); text.textContent = `${task.time} ${task.title}`;
     check.addEventListener('change', () => { task.done = check.checked; save(); renderTasks(); });
@@ -137,7 +143,6 @@ $('device-range').addEventListener('input',()=>{state.devices[selectedDevice.id]
 $('device-range').addEventListener('change',save);
 document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 $('device-dialog').addEventListener('close',()=>document.querySelector(`[data-device="${selectedDevice?.id}"]`)?.focus());
-$('add-task').addEventListener('click',()=>{if(state.tasks.length>=100){notify('予定は100件まで追加できます。');return;}const form=$('task-form');form.elements.date.value=dateKey();$('task-dialog').showModal();form.elements.title.focus();});
 $('task-form').addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;const title=form.elements.title.value.trim();if(!title)return;state.tasks.push({id:crypto.randomUUID(),title,date:form.elements.date.value,time:form.elements.time.value,done:false});save();renderTasks();$('task-dialog').close();form.reset();notify('予定を追加しました。');});
 $('location-label').textContent=state.location;
 $('location-button').addEventListener('click',()=>{$('location-form').elements.location.value=state.location;$('location-dialog').showModal();});

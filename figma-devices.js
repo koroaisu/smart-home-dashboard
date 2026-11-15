@@ -28,11 +28,11 @@ export function mountDeviceScreen(state, commit, notify) {
       card.setAttribute('aria-pressed', String(id === selected));
       card.setAttribute('aria-label', `${def.name}を選択`);
       card.setAttribute('aria-controls', 'device-control-panel');
-      for (const [file, className] of [['device-card', 'device-card-art'], ['device-card-selected', 'device-card-art selected-card-art'], [iconFile(id), 'card-icon']]) {
-        const img = document.createElement('img');
-        img.src = `/assets/figma-home/${file}.svg`; img.alt = ''; img.className = className;
-        card.append(img);
-      }
+      // Responsive CSS draws the frame for both states; a fixed-size SVG would
+      // overlap it when the selected card grows on wider tablets.
+      const icon = document.createElement('img');
+      icon.src = `/assets/figma-home/${iconFile(id)}.svg`; icon.alt = ''; icon.className = 'card-icon';
+      card.append(icon);
       for (const [className, text] of [['card-power', d.on ? 'ON' : 'OFF'], ['card-name', def.name], ['card-detail', detailText(def)], ['card-action', id === selected ? '選択中' : '詳細を見る　→']]) {
         const span = document.createElement('span'); span.className = className; span.textContent = text; card.append(span);
       }

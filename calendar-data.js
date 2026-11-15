@@ -3,6 +3,17 @@ import { validDate } from './state.js';
 const DAY = 86_400_000;
 const utcDay = key => Date.parse(`${key}T00:00:00Z`);
 const keyAt = value => new Date(value).toISOString().slice(0, 10);
+const hexColor = value => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
+
+export function calendarEventColors(color) {
+  const background = hexColor(color) ? color : '#e6c16f';
+  const channels = background.slice(1).match(/../g).map(v => {
+    const s = parseInt(v, 16) / 255;
+    return s <= .04045 ? s / 12.92 : ((s + .055) / 1.055) ** 2.4;
+  });
+  const luminance = channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+  return { background, foreground: luminance > .179 ? '#000000' : '#ffffff' };
+}
 
 // Formatters contain no account data; reuse them to fit the Free CPU budget.
 const formatters = new Map();
@@ -22,7 +33,7 @@ function dateTimeParts(value, timeZone) {
 }
 
 /** Expand a Google occurrence into visible day rows. The provider's end is exclusive. */
-export function googleEventRows(event, { calendarId, calendarName, rangeStart, rangeEnd, timeZone = 'Asia/Tokyo' }) {
+export function googleEventRows(event, { calendarId, calendarName, calendarColor, eventColors = {}, rangeStart, rangeEnd, timeZone = 'Asia/Tokyo' }) {
   if (!event?.id || event.status === 'cancelled' || !validDate(rangeStart) || !validDate(rangeEnd)) return [];
   const allDay = Boolean(event.start?.date);
   let first, last, startTime = '', endTime = '';
@@ -48,12 +59,25 @@ export function googleEventRows(event, { calendarId, calendarName, rangeStart, r
     rows.push({
       id: `google:${calendarId}:${event.id}:${date}`, eventId: event.id,
       source: 'google', calendarId, calendarName, date, allDay,
+      color: hexColor(eventColors[event.colorId]?.background) ? eventColors[event.colorId].background : hexColor(calendarColor) ? calendarColor : '#99804e',
       title: typeof event.summary === 'string' && event.summary.trim() ? event.summary.slice(0, 200) : '（タイトルなし）',
       time: allDay ? '終日' : date === first ? startTime : '継続',
       startDate: first, endDate: last, startTime, endTime,
     });
   }
   return rows;
+}
+
+/** Optional display metadata: a palette failure must not hide the user's events. */
+export async function readGoogleEventColors({ accessToken, fetchImpl = fetch, signal }) {
+  try {
+    const response = await fetchImpl('https://www.googleapis.com/calendar/v3/colors', {
+      headers: { Authorization: `Bearer ${accessToken}` }, cache: 'no-store', signal,
+    });
+    if (!response.ok) return {};
+    const data = await response.json();
+    return data?.event && typeof data.event === 'object' && !Array.isArray(data.event) ? data.event : {};
+  } catch { return {}; }
 }
 
 export function compareCalendarRows(a, b) {

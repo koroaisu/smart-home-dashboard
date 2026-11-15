@@ -1,4 +1,4 @@
-import { compareCalendarRows } from './calendar-data.js';
+import { compareCalendarRows, calendarEventColors } from './calendar-data.js';
 import { dateKey } from './state.js';
 
 const $ = id => document.getElementById(id);
@@ -85,8 +85,14 @@ export function mountPages(state, save, renderHomeTasks, notify, referenceMode, 
   let selectedDate=dateKey(), month=new Date().getMonth(), year=new Date().getFullYear();
   if(referenceMode){selectedDate='2026-11-10';month=10;year=2026;}
   const calendar=$('calendar-screen');
+  function colorEvent(node, event) {
+    const colors=calendarEventColors(event.color || googleCalendar.calendars.find(c=>c.id===event.calendarId)?.color);
+    node.style.setProperty('--event-color',colors.background);
+    node.style.setProperty('--event-ink',colors.foreground);
+    return node;
+  }
   function addTask(){if(state.tasks.length>=100){notify('予定は100件まで追加できます。');return;}$('task-form').elements.date.value=selectedDate;$('task-dialog').showModal();$('task-form').elements.title.focus();}
-  $('calendar-add').onclick=addTask;$('calendar-add-day').onclick=addTask;
+  $('calendar-add-day').onclick=addTask;
   function changeMonth(delta){const d=new Date(year,month+delta,1);year=d.getFullYear();month=d.getMonth();renderCalendar();}
   $('calendar-prev').onclick=()=>changeMonth(-1);$('calendar-next').onclick=()=>changeMonth(1);$('calendar-today').onclick=()=>{const d=new Date();year=d.getFullYear();month=d.getMonth();selectedDate=dateKey();renderCalendar();};
   function renderCalendar(){
@@ -96,15 +102,32 @@ export function mountPages(state, save, renderHomeTasks, notify, referenceMode, 
     const combined = [...state.tasks, ...googleCalendar.events].sort(compareCalendarRows);
     const grid=$('calendar-days');grid.replaceChildren(...['月','火','水','木','金','土','日'].map(s=>element('span',s,'weekday')));
     const first=new Date(year,month,1);const offset=(first.getDay()+6)%7;
-    for(let i=0;i<42;i++){const d=new Date(year,month,i-offset+1), key=dateKey(d), button=element('button',String(d.getDate()));button.classList.toggle('outside',d.getMonth()!==month);button.classList.toggle('sunday',d.getDay()===0);button.classList.toggle('has-tasks',combined.some(t=>t.date===key));button.setAttribute('aria-pressed',String(key===selectedDate));button.setAttribute('aria-label',new Intl.DateTimeFormat('ja-JP',{dateStyle:'full'}).format(d));if(key===dateKey())button.append(element('small','今日'));button.onclick=()=>{selectedDate=key;if(d.getMonth()!==month){year=d.getFullYear();month=d.getMonth();}renderCalendar();};grid.append(button);}
+    for(let i=0;i<42;i++){
+      const d=new Date(year,month,i-offset+1), key=dateKey(d);
+      const button=element('button',''), number=element('span',String(d.getDate()),'calendar-day-number');
+      button.append(number);
+      button.classList.toggle('outside',d.getMonth()!==month);
+      button.classList.toggle('sunday',d.getDay()===0);
+      const dayEvents=combined.filter(t=>t.date===key);
+      button.setAttribute('aria-pressed',String(key===selectedDate));
+      button.setAttribute('aria-label',new Intl.DateTimeFormat('ja-JP',{dateStyle:'full'}).format(d)+(dayEvents.length?`、予定${dayEvents.length}件`:''));
+      if(key===dateKey())button.setAttribute('aria-current','date');
+      const previews=element('span','','calendar-events');
+      for(const event of dayEvents.slice(0,3)){
+        const chip=colorEvent(element('span',event.title,'calendar-event-chip'),event);
+        chip.title=`${event.time} ${event.title}${event.calendarName?' / '+event.calendarName:''}`;
+        previews.append(chip);
+      }
+      button.append(previews);
+      if(dayEvents.length>3)button.append(element('span',`+${dayEvents.length-3}`,'calendar-event-overflow'));
+      button.onclick=()=>{selectedDate=key;if(d.getMonth()!==month){year=d.getFullYear();month=d.getMonth();}renderCalendar();};
+      grid.append(button);
+    }
     $('calendar-selected').textContent=new Intl.DateTimeFormat('ja-JP',{month:'long',day:'numeric',weekday:'long'}).format(new Date(selectedDate+'T12:00:00'));
     $('calendar-date-tag').textContent=selectedDate===dateKey()?'今日':'選択日';
     const tasks=combined.filter(t=>t.date===selectedDate);
-    $('calendar-agenda').replaceChildren(...tasks.map(t=>{if(t.source==='google'){const row=element('div','','calendar-google-task');row.append(element('span',t.time+' '+t.title),element('small',t.calendarName));return row;}const row=element('label','',`calendar-task${t.done?' done':''}`),check=document.createElement('input');check.type='checkbox';check.checked=t.done;check.setAttribute('aria-label',t.title+'を完了');check.onchange=()=>{t.done=check.checked;save();renderHomeTasks();renderCalendar();};row.append(check,element('span',t.time+' '+t.title));return row;}));
+    $('calendar-agenda').replaceChildren(...tasks.map(t=>{if(t.source==='google'){const row=colorEvent(element('div','','calendar-google-task'),t);row.append(element('span',t.time+' '+t.title),element('small',t.calendarName));return row;}const row=colorEvent(element('label','',`calendar-task${t.done?' done':''}`),t),check=document.createElement('input');check.type='checkbox';check.checked=t.done;check.setAttribute('aria-label',t.title+'を完了');check.onchange=()=>{t.done=check.checked;save();renderHomeTasks();renderCalendar();};row.append(check,element('span',t.time+' '+t.title));return row;}));
     if(!tasks.length){$('calendar-agenda').append(element('p',selectedDate===dateKey()?'今日は予定がありません':'この日は予定がありません'),element('small','自分のペースで過ごしましょう。','calendar-empty-note'));}
-    const upcoming=combined.filter(t=>!t.done&&t.date>=dateKey()).slice(0,30);
-    $('calendar-upcoming').replaceChildren(...upcoming.map(t=>{const row=element('div','','upcoming-item');row.append(element('small',t.date.slice(5).replace('-','/')+'　'+t.time),element('p',t.title));return row;}));
-    if(!upcoming.length)$('calendar-upcoming').append(element('p','これからの予定はありません。','muted'));
   }
   function renderConnection() {
     const status = googleCalendar.status;

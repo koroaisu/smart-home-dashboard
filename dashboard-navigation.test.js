@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
+import { calendarEventColors } from './calendar-data.js';
 
 // Exercise the actual page controller with a minimal DOM. This checks gesture
 // state and layout arithmetic, not Safari rendering or device frame rate.
 const source = (await readFile(new URL('./figma-exact.js', import.meta.url), 'utf8')).replace(/^import .*;\r?\n/gm, '');
-function page({ width = 1024, height = 768, safeTop = 20, safeBottom = 0 } = {}) {
+function page({ width = 1024, height = 768, safeTop = 20, safeBottom = 0, googleEvents = [] } = {}) {
   const frames = new Map(), animations = [], nodes = new Map();
   let frameId = 0, now = 1000;
   class Element {
@@ -37,7 +38,7 @@ function page({ width = 1024, height = 768, safeTop = 20, safeBottom = 0 } = {})
   const document = Object.assign(new Element(), {
     body, documentElement: root,
     createElement: () => new Element(),
-    getElementById(id) { if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); },
+    getElementById(id) { assert.notEqual(id,'add-task','home add button was removed'); if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); },
     querySelector(selector) { return selector === '.navigation' ? navigation : selector === '.design-canvas' ? canvas : null; },
     querySelectorAll(selector) { return selector === '[data-screen]' ? buttons : []; },
   });
@@ -53,8 +54,8 @@ function page({ width = 1024, height = 768, safeTop = 20, safeBottom = 0 } = {})
     cancelAnimationFrame(id) { frames.delete(id); },
     setTimeout: () => 1, clearTimeout() {}, setInterval() {},
     deviceDefinitions: [], dateKey: () => '2026-11-15', validDate: () => true,
-    compareCalendarRows: () => 0,
-    createCalendarClient: () => ({ events: [], init() {} }),
+    compareCalendarRows: () => 0, calendarEventColors,
+    createCalendarClient: () => ({ events: googleEvents, calendars: [], init() {} }),
     mountPages: () => ({ renderCalendar() {} }), mountDeviceScreen: () => ({ render() {} }),
   });
   vm.runInContext(source, context);
@@ -70,6 +71,18 @@ function page({ width = 1024, height = 768, safeTop = 20, safeBottom = 0 } = {})
   return { root, body, canvas, navigation, window, location, nodes, animations, send, document, Element };
 }
 
+test('home agenda uses the same Google event colors and filters to today', () => {
+  const p=page({googleEvents:[
+    {source:'google',date:'2026-11-15',time:'10:00',title:'今日の予定',color:'#112233',calendarName:'個人'},
+    {source:'google',date:'2026-11-16',time:'10:00',title:'翌日の予定',color:'#abcdef',calendarName:'個人'},
+  ]});
+  const rows=p.nodes.get('task-list').children;
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].textContent,'10:00 今日の予定');
+  assert.equal(rows[0].style['--event-color'],'#112233');
+  assert.equal(rows[0].style['--event-ink'],'#ffffff');
+});
+
 test('footer is outside the scaled canvas and content fits iPad viewport including safe areas', () => {
   for (const [width, height] of [[1024,768], [1180,820], [1368,1024]]) {
     const p = page({ width, height, safeTop: 24, safeBottom: 20 });
@@ -83,11 +96,13 @@ test('footer is outside the scaled canvas and content fits iPad viewport includi
 
 test('responsive columns consume spare iPad width without widening the gaps', async () => {
   const css = await readFile(new URL('./responsive-layout.css', import.meta.url), 'utf8');
+  const typography = await readFile(new URL('./typography.css', import.meta.url), 'utf8');
+  const calendarColumns = typography.match(/#calendar-screen\{([^}]+)\}/)[1];
   for (const [width, height] of [[1024,768], [1180,820], [1194,834], [1368,1024]]) {
     const p = page({ width, height, safeTop: 24, safeBottom: 20 });
     const spread = parseFloat(p.root.style['--spread']);
-    function value(name) {
-      const expression = css.match(new RegExp(`--${name}:calc\\(([^;]+)\\);`))[1]
+    function value(name, stylesheet = css) {
+      const expression = stylesheet.match(new RegExp(`--${name}:calc\\(([^;]+)\\);`))[1]
         .replace(/var\(--spread,0px\)/g, String(spread)).replace(/px/g, '');
       return vm.runInNewContext(expression);
     }
@@ -96,6 +111,9 @@ test('responsive columns consume spare iPad width without widening the gaps', as
     assert.ok(Math.abs(contentWidth - value('music-left') - value('music-right') - 31) < 0.01);
     assert.ok(Math.abs(contentWidth - value('device-left') - value('device-right') - 47) < 0.01);
     assert.ok(Math.abs(contentWidth - 2 * value('home-side') - (612 + spread * .5) - 110) < 0.01);
+    const calendarWidth = value('page-left',calendarColumns), agendaWidth = value('page-right',calendarColumns);
+    assert.ok(Math.abs(calendarWidth - agendaWidth * 2) < 0.01);
+    assert.ok(Math.abs(contentWidth - calendarWidth - agendaWidth - 31) < 0.01);
   }
 });
 

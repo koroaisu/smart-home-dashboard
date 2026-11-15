@@ -102,3 +102,53 @@
 dialog{font-size:20px;line-height:1.5}
 .dialog-heading h2{font-size:27px}
 #feedback{font-size:18px}
+
+/* Calendar: reserve the right column for the selected day's full agenda. */
+#calendar-screen{--page-left:calc((1313px + var(--spread,0px)) * 2 / 3);--page-right:calc((1313px + var(--spread,0px)) / 3);}
+#calendar-screen>.selected-day-panel{height:768px}
+#calendar-screen #calendar-agenda{left:31px;right:31px;top:159px;bottom:132px;width:auto;height:auto}
+#calendar-screen .calendar-task,#calendar-screen .calendar-google-task{padding:14px 8px;font-size:22px;line-height:32px}
+#calendar-screen .calendar-google-task small{font-size:18px;line-height:26px}
+#calendar-screen .calendar-sync{position:absolute;left:31px;right:31px;bottom:84px;display:flex;flex-wrap:wrap;gap:0 14px;color:var(--muted);font-size:16px;line-height:24px;max-height:48px;overflow:auto}
+#calendar-screen .page-heading #calendar-connection{top:2px;right:0;width:228px;height:48px;font-size:20px;line-height:30px}
+#calendar-screen .calendar-grid button{align-self:stretch;height:81px;padding:0;text-align:left}
+#calendar-screen .calendar-day-number{position:absolute;left:50%;top:4px;transform:translateX(-50%);width:42px;height:42px;display:grid;place-items:center;font-size:29px;line-height:38px;border:2px solid transparent;border-radius:0}
+#calendar-screen .calendar-grid button[aria-current=date] .calendar-day-number{border-color:var(--ink);color:var(--ink)}
+#calendar-screen .calendar-toolbar{display:grid;grid-template-columns:57px minmax(0,1fr) 57px 100px;gap:12px;align-items:start}
+#calendar-screen .calendar-toolbar h2{position:static;left:auto;width:auto;transform:none;font-size:31px;line-height:48px;grid-column:2;grid-row:1}
+#calendar-screen .calendar-toolbar button{position:static;left:auto;right:auto;top:auto}
+#calendar-screen #calendar-prev{grid-column:1;grid-row:1}
+#calendar-screen #calendar-next{grid-column:3;grid-row:1}
+#calendar-screen #calendar-today{grid-column:4;grid-row:1;width:100px}
+
+/* Month grid: thin separators and compact, color-coded event titles. */
+#calendar-screen .calendar-grid{top:108px;bottom:16px;left:18px;right:18px;height:auto;grid-template-rows:32px repeat(6,minmax(0,1fr));border:0}
+#calendar-screen .weekday{font-size:18px;line-height:31px;border-right:1px solid #d8cbaa;border-bottom:1px solid #d8cbaa}
+#calendar-screen .calendar-grid button{width:100%;height:100%;min-height:0;border:0;border-right:1px solid #d8cbaa;border-bottom:1px solid #d8cbaa}
+#calendar-screen .calendar-grid button[aria-pressed=true]{background:#f0e2b8}
+#calendar-screen .calendar-grid>:nth-child(7n){border-right:0}
+#calendar-screen .calendar-grid button:nth-last-child(-n+7){border-bottom:0}
+#calendar-screen .calendar-day-number{top:3px;width:32px;height:32px;font-size:22px;line-height:28px}
+#calendar-screen .calendar-events{position:absolute;top:36px;left:2px;right:2px;bottom:4px;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+#calendar-screen .calendar-event-chip{display:block;flex-shrink:0;max-width:100%;height:19px;padding:0 3px;border:0;background:var(--event-color);color:var(--event-ink);font-size:16px;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+#calendar-screen .calendar-event-overflow{position:absolute;right:4px;top:5px;font-size:13px;line-height:20px;color:var(--ink)}
+#calendar-screen .calendar-task,#calendar-screen .calendar-google-task{border-left:4px solid var(--event-color,var(--gold));padding-left:12px}
+#calendar-screen .calendar-grid button.outside .calendar-events,#calendar-screen .calendar-grid button.outside .calendar-event-overflow{opacity:.4}
+
+/* Home: lend 80 design pixels from environment readings to today's agenda. */
+#home-screen>.agenda{height:267px}
+#home-screen #task-list{top:66px;left:25px;right:25px;bottom:22px;height:auto;max-height:none}
+#home-screen #task-list>.google-home-task,#home-screen .task-item{margin:0 0 8px;padding:6px 8px;border:0;border-left:4px solid var(--event-color);background:transparent;color:var(--ink);font-size:18px;line-height:27px;white-space:normal;overflow-wrap:anywhere}
+#home-screen .task-item.is-done span{color:inherit}
+#home-screen>.indoor{top:544px;height:336px}
+#home-screen .temperature dt{top:96px}
+#home-screen .temperature dd{top:83px}
+#home-screen .temperature .unit{top:98px}
+#home-screen .humidity dt{top:178px}
+#home-screen .humidity dd{top:165px}
+#home-screen .humidity .unit{top:180px}
+#home-screen .co2 dt{top:260px}
+#home-screen .co2 dd{top:247px}
+#home-screen .co2 .unit{top:262px}
+#home-screen .indoor .r1{top:154px}
+#home-screen .indoor .r2{top:236px}

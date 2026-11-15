@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>プライバシーポリシー — Sekhmet Calendar</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body><main>
+  <p class="eyebrow"><a href="/">Sekhmet Calendar</a></p>
+  <h1>プライバシーポリシー</h1>
+  <p>本ポリシーは、個人用ホームダッシュボードのGoogleカレンダー連携機能「Sekhmet Calendar」（以下「本アプリ」）に適用されます。</p>
+  <h2>1. アクセスする情報と利用目的</h2>
+  <p>利用者の同意に基づき、Google Calendar APIからカレンダー一覧と、選択したカレンダーの予定情報を取得します。カレンダー名・識別子・色、予定の識別子・タイトル・開始日時・終了日時・終日区分などを、予定の選択、表示、重複の除去、自動更新に利用します。</p>
+  <p>要求する権限は、カレンダー一覧と予定の読み取り専用です。Googleカレンダーの予定を作成・変更・削除しません。</p>
+  <h2>2. 保存と保護</h2>
+  <p>取得した予定は、処理中のサーバーメモリと、画面を開いているブラウザのメモリで扱います。本アプリはGoogleの予定をデータベースやブラウザのlocalStorageへ保存しません。表示対象のカレンダー識別子と、利用者が手動で追加した端末内予定はブラウザのlocalStorageに保存されます。</p>
+  <p>Googleとの接続に使うアクセストークンと更新用トークンは、暗号化したHttpOnly・Secure Cookieとして利用端末に保存し、Cloudflare上のサーバー処理で使用します。ブラウザのJavaScriptにはトークンを返しません。暗号鍵とクライアントシークレットはサーバー側のSecretsで管理します。</p>
+  <p>接続Cookieは、予定を正常に取得するたびに有効期間が更新され、最後の正常取得から最大30日間保持されます。Google側の許可失効やログイン期限により、それ以前に再接続が必要になる場合もあります。</p>
+  <h2>3. 外部サービスと共有</h2>
+  <p>本アプリはGoogleの認証・カレンダーAPIと、Cloudflareの配信・サーバー処理・アクセス認証を利用します。これらのサービスは通信と認証に必要な情報を処理します。Googleの予定データを広告、販売、第三者のAIモデルの学習に利用せず、予定表示に必要な処理以外の目的で第三者へ提供しません。</p>
+  <p>Google APIから受け取る情報の利用は、<a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>のLimited Use要件に従います。外部サービスの取り扱いは、<a href="https://policies.google.com/privacy">Googleのプライバシーポリシー</a>と<a href="https://www.cloudflare.com/privacypolicy/">Cloudflareのプライバシーポリシー</a>もご確認ください。</p>
+  <h2>4. 連携の解除とデータの削除</h2>
+  <p>ダッシュボードの「カレンダー → 接続設定」から連携を解除できます。本アプリはGoogleに許可の取り消しを要求し、接続Cookieと表示中のGoogle予定を消去します。通信障害などでGoogle側の取り消しが完了しない場合は、Googleアカウントの<a href="https://myaccount.google.com/connections">サードパーティとの接続</a>から本アプリのアクセス権を取り消してください。</p>
+  <p>端末内の手動予定や設定はGoogle連携の解除だけでは消去されません。不要な場合はブラウザの当該サイトのデータを消去してください。Googleカレンダー本体の予定は変更・削除されません。</p>
+  <h2>5. お問い合わせ・変更</h2>
+  <p>運営者は本アプリの所有者個人です。お問い合わせはGoogleの同意画面に表示されるユーザーサポートメールアドレスへお寄せください。機能やデータの取り扱いを変更した場合は、本ページの内容と更新日を改訂します。</p>
+  <footer><a href="/">アプリについて</a><span>制定・更新：2026年11月15日</span></footer>
+</main></body>
+</html>

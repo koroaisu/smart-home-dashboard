@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sekhmet-calendar-info",
+  "compatibility_date": "2026-11-15",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./calendar-info",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
+}

@@ -133,3 +133,13 @@ Google Auth Platformの作成完了を管理画面で確認。Webクライアン
 Google側の公開状態はまだTesting。本人のテストユーザー登録は未実施。長期利用にはProductionへの切替が必要だが、Audienceの公開ボタンはBranding構成完了待ちで無効だった。ホームページURLは補完・保存したが、プライバシーポリシー等の公開情報の用意と確認が残っている。未認証ユーザーへダッシュボードやカレンダーを公開する変更は行わない。初回Google同意・予定取得・長期更新の実動作は未確認。
 
 参考：[Google OAuthポリシー](https://developers.google.com/identity/protocols/oauth2/policies)、[個人利用の確認免除](https://support.google.com/cloud/answer/13464323?hl=en)。個人利用の確認免除と、アプリ情報の設定・公開ステータスは区別する。
+
+## 2026-11-15：Google向け公開説明ページ
+
+本人承認により、本体とは別の静的Worker sekhmet-calendar-infoへ説明・プライバシーポリシーを公開した。設定はwrangler.calendar-info.jsonc、公開対象はcalendar-info/のHTML2枚・CSS・ヘッダーだけ。秘密値・予定API・ダッシュボード資産は含めない。
+
+- ホームページ：https://sekhmet-calendar-info.kouro-tanabe.workers.dev/
+- プライバシーポリシー：https://sekhmet-calendar-info.kouro-tanabe.workers.dev/privacy
+- 反映バージョン：aa98a920-e854-4546-828e-f4b3a6bf11a4
+
+両ページの未認証200、説明ページからポリシーへのリンク、公開サイトの予定API404、本体のAccess302を確認。静的サイトではhtml_handling:noneだとルートがindex.htmlへ解決されず404になったため、auto-trailing-slashへ修正した。本体の設定は変更しない。GoogleへのURL登録・本番化・初回接続は未完了。

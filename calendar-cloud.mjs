@@ -1,5 +1,5 @@
 import { validDate } from './state.js';
-import { googleEventRows, compareCalendarRows, readGooglePages } from './calendar-data.js';
+import { googleEventRows, compareCalendarRows, readGooglePages, readGoogleEventColors } from './calendar-data.js';
 
 const SESSION = '__Host-sekhmet-calendar';
 const FLOW = '__Host-sekhmet-calendar-flow';
@@ -127,14 +127,19 @@ export async function handleCalendarRequest(request, env, { fetchImpl = fetch } 
       .map(c => ({ id: c.id, name: c.summaryOverride || c.summary || 'カレンダー', primary: Boolean(c.primary), color: /^#[0-9a-f]{6}$/i.test(c.backgroundColor) ? c.backgroundColor : '#99804e' }));
     const ids = input.calendarIds ?? calendars.filter(c => c.primary).map(c => c.id);
     if (ids.some(id => !calendars.some(c => c.id === id))) return json({ error: '選択したカレンダーを読み取れません。選択し直してください。', code: 'calendar_unavailable', calendars }, 400);
-    const rows = (await Promise.all([...new Set(ids)].map(async calendarId => {
+    const calendarRows = await Promise.all([...new Set(ids)].map(async calendarId => {
       const events = await readGooglePages(`calendars/${encodeURIComponent(calendarId)}/events`, { ...shared, params: {
         timeMin: new Date(Date.parse(`${rangeStart}T00:00:00Z`) - 2 * 86_400_000).toISOString(),
         timeMax: new Date(Date.parse(`${rangeEnd}T00:00:00Z`) + 2 * 86_400_000).toISOString(),
         timeZone, singleEvents: true, orderBy: 'startTime', maxResults: 2500, showDeleted: false,
       } });
-      return events.flatMap(event => googleEventRows(event, { calendarId, calendarName: calendars.find(c => c.id === calendarId).name, rangeStart, rangeEnd, timeZone }));
-    }))).flat().sort(compareCalendarRows);
+      return { calendar: calendars.find(c => c.id === calendarId), events };
+    }));
+    const eventColors = calendarRows.some(({ events }) => events.some(event => event.colorId))
+      ? await readGoogleEventColors({ ...shared, signal: AbortSignal.timeout(5_000) }) : {};
+    const rows = calendarRows.flatMap(({ calendar, events }) => events.flatMap(event => googleEventRows(event, {
+      calendarId: calendar.id, calendarName: calendar.name, calendarColor: calendar.color, eventColors, rangeStart, rangeEnd, timeZone,
+    }))).sort(compareCalendarRows);
     session = { ...session, expires: Date.now() + 30 * 86_400_000 };
     return json({ calendars, selectedIds: ids, events: rows, updatedAt: new Date().toISOString() }, 200, { 'Set-Cookie': cookie(SESSION, await seal(session, env, SESSION), Math.max(1, Math.floor((session.expires - Date.now()) / 1000))) });
   } catch (error) {
