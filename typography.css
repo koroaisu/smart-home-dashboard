@@ -1,0 +1,102 @@
+/* Sizes are design units and use the same uniform tablet scale as the panels.
+   Give the clock more emphasis without scaling the whole composition. */
+#home-screen #date{top:30px;font-size:25px;line-height:38px}
+#home-screen #clock{top:68px;font-size:120px;line-height:132px;font-variant-numeric:tabular-nums}
+#home-screen .weather{top:207px;font-size:27px;line-height:40px;display:flex;align-items:center;gap:16px}
+#home-screen .weather>img{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+#home-screen .weather-range{top:283px;font-size:21px;line-height:31px}
+#home-screen .panel h2{font-size:23px;line-height:34px}
+#home-screen .devices h2{font-size:25px;line-height:36px}
+#home-screen .reading dt{font-size:20px;line-height:30px}
+#home-screen .outdoor dd{font-size:29px;line-height:42px}
+#home-screen .indoor dd{font-size:37px;line-height:52px}
+#home-screen .reading dd{right:76px}
+#home-screen .reading .unit{right:22px;width:42px;text-align:center;font-size:17px;line-height:25px}
+#home-screen .pm .unit{font-size:14px;line-height:22px}
+#home-screen #task-list>p{font-size:20px;line-height:30px;white-space:normal}
+#home-screen #task-list>small{font-size:18px;line-height:26px;margin-top:6px}
+#home-screen .task-item,#home-screen #task-list>.google-home-task{font-size:18px;line-height:27px}
+#home-screen .comfort,#home-screen #device-count{font-size:18px;line-height:26px}
+#home-screen .device-name{font-size:20px;line-height:30px}
+#home-screen .device-status,#home-screen .power-badge{font-size:18px;line-height:26px}
+#home-screen #speech-text{top:32px;font-size:23px;line-height:34px;max-height:68px}
+#home-screen .nameplate>span{left:14px;font-size:17px;line-height:24px}
+#home-screen .welcome{font-size:23px;line-height:32px}
+#home-screen .room-state{top:850px;font-size:20px;line-height:28px}
+
+/* Shared screen headings, actions and supplementary labels. */
+.interactive-page,.devices-screen{font-size:22px}
+.interactive-page button,.devices-screen button,.pixel-button{font-size:20px;line-height:30px}
+.interactive-page .page-heading h1,.devices-screen h1{font-size:39px;line-height:55px}
+.interactive-page .page-heading>p,.devices-page-caption,.devices-page-count{font-size:20px;line-height:30px}
+.interactive-page .muted{font-size:20px;line-height:29px}
+.interactive-page .tag{font-size:18px;line-height:26px}
+.interactive-page .empty-state{font-size:20px;line-height:30px}
+
+/* Device cards and controls retain their original tap targets and spacing. */
+.devices-screen .card-name{font-size:27px;line-height:39px}
+.devices-screen .card-detail,.devices-screen .card-action,.devices-screen .control-location,
+.devices-screen .control-description{font-size:20px;line-height:29px}
+.devices-screen .card-power,.devices-screen .control-power-badge{font-size:18px;line-height:26px}
+.devices-screen .device-control-panel h2{font-size:29px;line-height:42px}
+.devices-screen .control-setting-label,.devices-screen .control-colors>p{font-size:23px;line-height:33px}
+.devices-screen .control-value{font-size:78px;line-height:110px}
+.devices-screen .control-unit{left:calc(50% + 47px);font-size:27px;line-height:39px}
+.devices-screen .device-scenes h2{font-size:25px;line-height:36px}
+.devices-screen .scene-buttons p{font-size:17px;line-height:25px;margin-top:14px}
+
+/* Music and topics. */
+.interactive-page .album-art>p:first-child{font-size:25px;line-height:36px}
+.interactive-page .album-art>p:last-child{font-size:22px;line-height:32px}
+.interactive-page .player h2{font-size:33px;line-height:46px}
+.interactive-page .player .artist,.interactive-page .speaker-name{font-size:22px;line-height:32px}
+.interactive-page .time-row,.interactive-page .speaker-name small{font-size:18px;line-height:26px}
+.interactive-page .playlist h2{font-size:31px;line-height:44px}
+.interactive-page .playlist>p{font-size:19px;line-height:28px}
+.interactive-page .track>span:first-child{font-size:20px;line-height:30px}
+.interactive-page .track>span:nth-child(2){font-size:25px;line-height:36px}
+.interactive-page .track small{font-size:18px;line-height:26px}
+.interactive-page .track>small{font-size:19px;line-height:28px}
+.interactive-page .mood-panel h2{font-size:27px;line-height:38px}
+.interactive-page .mood-panel>p{font-size:19px;line-height:28px}
+.interactive-page .topic-feature h2{font-size:41px;line-height:58px}
+.interactive-page .topic-feature p{font-size:22px;line-height:32px}
+.interactive-page .topic-row p{font-size:25px;line-height:36px}
+.interactive-page .topic-row small{font-size:18px;line-height:26px}
+.interactive-page .weather-table h2{font-size:30px;line-height:43px}
+.interactive-page .weather-table dt{font-size:22px;line-height:32px}
+.interactive-page .weather-table dd{font-size:27px;line-height:38px}
+.interactive-page .pet-note p{font-size:24px;line-height:34px}
+.interactive-page .pet-name{font-size:18px}
+.interactive-page .topic-greeting{font-size:22px;line-height:29px}
+
+/* Calendar and notifications: larger text within bounded scroll regions. */
+.interactive-page .calendar-toolbar h2{font-size:35px;line-height:49px}
+.interactive-page .weekday{font-size:22px}
+.interactive-page .calendar-grid button{font-size:31px;line-height:44px}
+.interactive-page .calendar-grid button small,.interactive-page .calendar-foot{font-size:18px;line-height:26px}
+.interactive-page .selected-day-panel .day-title{font-size:29px;line-height:41px}
+.interactive-page #calendar-agenda{font-size:22px;line-height:32px}
+.interactive-page .calendar-task,.interactive-page .calendar-google-task{font-size:20px;line-height:29px}
+.interactive-page .calendar-empty-note{font-size:20px;line-height:29px}
+.interactive-page .calendar-google-task small,.interactive-page .local-calendar-note{font-size:17px;line-height:25px}
+.interactive-page .upcoming h2{font-size:27px;line-height:38px}
+.interactive-page .upcoming-item small{font-size:20px;line-height:29px}
+.interactive-page .upcoming-item p{font-size:24px;line-height:34px}
+.interactive-page .calendar-storage #calendar-source-title{font-size:23px;line-height:33px}
+.interactive-page .calendar-storage #calendar-source-status{font-size:18px;line-height:26px}
+.interactive-page #calendar-connection{font-size:18px;line-height:26px}
+.interactive-page .notice-list-panel>h2{font-size:25px;line-height:36px}
+.interactive-page .notice-time,.interactive-page .notice-date{font-size:19px;line-height:28px}
+.interactive-page .notification-row strong{font-size:26px;line-height:38px}
+.interactive-page .notification-row>small{font-size:19px;line-height:27px}
+.interactive-page .notification-detail h2{font-size:33px;line-height:46px}
+.interactive-page .notification-detail .body,.interactive-page .notice-tip p{font-size:22px;line-height:31px}
+
+/* Slightly larger labels still fit inside the existing navigation frame. */
+.navigation button{font-size:17px;line-height:24px;gap:4px;padding-top:5px}
+.navigation button[aria-current=page]{padding-top:3px}
+.navigation button img{width:18px;height:18px}
+dialog{font-size:20px;line-height:1.5}
+.dialog-heading h2{font-size:27px}
+#feedback{font-size:18px}

@@ -3,6 +3,7 @@ import { compareCalendarRows } from './calendar-data.js';
 import { mountPages } from './figma-pages.js';
 import { deviceDefinitions, dateKey, validDate } from './state.js';
 import { mountDeviceScreen } from './figma-devices.js';
+import { weatherIconFor } from './weather-icons.js';
 
 const $ = id => document.getElementById(id);
 // Keep navigation outside the transformed canvas so it anchors to the viewport.
@@ -61,6 +62,8 @@ window.visualViewport?.addEventListener('resize', fitDesign);
 function tick() {
   if (referenceMode) return;
   const now = new Date();
+  const icon = weatherIconFor($('current-weather').dataset.condition, now.getHours());
+  if ($('weather-icon').getAttribute('src') !== icon) $('weather-icon').setAttribute('src', icon);
   const time = new Intl.DateTimeFormat('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
   $('clock').textContent = $('header-clock').textContent = time;
   $('date').textContent = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'long' }).format(now);

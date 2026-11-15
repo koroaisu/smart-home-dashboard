@@ -70,6 +70,7 @@ npm test         # 状態・予定・認証・家電操作のテスト
 | `figma-devices.*` / `figma-device-actions.js` | デバイス画面と操作 |
 | `figma-pages.js` / `.css` | 音楽・トピック・カレンダー・通知 |
 | `responsive-layout.css` | 全6画面の可変列幅・枠・枠内配置・フッター整列 |
+| `typography.css` | 読みやすさのための文字サイズ・時計の強調 |
 | `state.js` | 端末内の状態と日付処理 |
 | `calendar-*` | Googleカレンダーの表示・取得・OAuth |
 | `cloudflare-*.mjs` / `wrangler.jsonc` | Cloudflare配信・アクセス制限 |
