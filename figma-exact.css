@@ -19,3 +19,26 @@ dialog{width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overfl
 
 /* Shared screen placement for horizontal slide transitions. */
 .design-canvas{overflow:hidden}.design-main,.mockup-screen{grid-area:2/1}.navigation{grid-area:3/1;z-index:5}.status-bar{grid-area:1/1;z-index:5}.screen-sliding{will-change:transform}
+
+/* Header-free tablet layout. Move whole panels, never their absolute children. */
+.design-canvas{width:var(--canvas-width,1440px);height:1024px;grid-template-rows:0 936px 88px}
+.status-bar{display:none}
+.design-canvas>.design-main,.design-canvas>.interactive-page{width:calc(1344px + var(--spread,0px))}
+#home-screen>.devices{left:auto;right:0}
+#home-screen>.center{width:1344px;left:calc(var(--spread,0px)/2);right:auto}
+.devices-screen>.device-control-panel{left:auto;right:0}
+.interactive-page>.playlist,.interactive-page>.mood-panel,.interactive-page>.weather-table,.interactive-page>.pet-note,.interactive-page>.selected-day-panel,.interactive-page>.upcoming,.interactive-page>.calendar-storage,.interactive-page>.notification-detail,.interactive-page>.notice-tip{left:auto;right:0}
+.interactive-page>.topic-pet{left:calc(1046px + var(--spread,0px))}
+.interactive-page>.topic-greeting{left:auto;right:0}
+.navigation nav{left:50%;transform:translateX(-50%)}
+
+/* The document never scrolls; only bounded lists and dialogs may scroll. */
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--footer-height:64px}
+html{position:fixed;inset:0;overscroll-behavior:none}
+body{position:fixed;inset:0;height:var(--viewport-height,100%);overflow:hidden;overscroll-behavior:none}
+.design-viewport{position:absolute;inset:var(--safe-top) 0 calc(var(--footer-height) + var(--safe-bottom));width:100%;height:auto;overflow:hidden;touch-action:pan-y pinch-zoom}
+.design-canvas{height:936px;grid-template-rows:0 936px;isolation:isolate}
+body>.navigation{position:absolute;left:0;right:0;bottom:0;height:calc(var(--footer-height) + var(--safe-bottom));padding-bottom:var(--safe-bottom);z-index:5;touch-action:manipulation}
+body>.navigation nav{top:0;transform:translateX(-50%) scale(var(--fit));transform-origin:top center}
+.panel-scroll,.device-cards,#task-list,#speech-text,dialog{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y pinch-zoom}
+.screen-sliding{backface-visibility:hidden;pointer-events:none;user-select:none;-webkit-user-select:none}

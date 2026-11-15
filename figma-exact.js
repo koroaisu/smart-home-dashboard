@@ -5,6 +5,8 @@ import { deviceDefinitions, dateKey, validDate } from './state.js';
 import { mountDeviceScreen } from './figma-devices.js';
 
 const $ = id => document.getElementById(id);
+// Keep navigation outside the transformed canvas so it anchors to the viewport.
+document.body.append(document.querySelector('.navigation'));
 // Isolated storage keeps this design prototype from changing the existing dashboard.
 const storageKey = 'sekhmet-figma-exact-v1';
 const referenceMode = new URLSearchParams(location.search).get('reference') === '1';
@@ -40,7 +42,17 @@ function fitDesign() {
   if (viewport && viewport.scale !== 1) return;
   const width = viewport?.width || innerWidth;
   const height = viewport?.height || innerHeight;
-  document.documentElement.style.setProperty('--fit', Math.min(width / 1440, height / 1080));
+  // Keep panel interiors at their design size; distribute only the extra width.
+  const rootStyle = getComputedStyle(document.documentElement);
+  const safeTop = parseFloat(rootStyle.getPropertyValue('--safe-top')) || 0;
+  const safeBottom = parseFloat(rootStyle.getPropertyValue('--safe-bottom')) || 0;
+  const scale = Math.min(width / 1440, Math.max(1, height - safeTop - safeBottom) / 1024);
+  const canvasWidth = Math.min(1840, width / scale);
+  document.documentElement.style.setProperty('--fit', scale);
+  document.documentElement.style.setProperty('--canvas-width', `${canvasWidth}px`);
+  document.documentElement.style.setProperty('--spread', `${canvasWidth - 1440}px`);
+  document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+  document.documentElement.style.setProperty('--footer-height', `${88 * scale}px`);
 }
 fitDesign();
 window.addEventListener('resize', fitDesign);
@@ -143,7 +155,7 @@ const screens = [
 ];
 let activeScreen = null;
 let slideAnimations = [];
-function selectScreen(index) {
+function selectScreen(index, { offset = 0 } = {}) {
   const selected = screens[Number(index)] || screens[0];
   if (selected === activeScreen) return;
   const previous = activeScreen;
@@ -157,6 +169,7 @@ function selectScreen(index) {
     element.inert = screen !== selected;
     element.removeAttribute('aria-hidden');
     element.classList.remove('screen-sliding');
+    element.style.removeProperty('transform');
   }
   if (previous && !matchMedia('(prefers-reduced-motion: reduce)').matches && $('home-screen').animate) {
     const outgoing = $(previous.id + '-screen'), incoming = $(selected.id + '-screen');
@@ -164,9 +177,10 @@ function selectScreen(index) {
     outgoing.inert = true;
     outgoing.setAttribute('aria-hidden', 'true');
     outgoing.classList.add('screen-sliding'); incoming.classList.add('screen-sliding');
-    const options = { duration: 300, easing: 'cubic-bezier(.22,.61,.36,1)' };
-    const exit = outgoing.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-direction * 1440) + 'px)' }], options);
-    const enter = incoming.animate([{ transform: 'translateX(' + (direction * 1440) + 'px)' }, { transform: 'translateX(0)' }], options);
+    const options = { duration: offset ? 200 : 260, easing: 'cubic-bezier(.22,.61,.36,1)' };
+    const distance = document.querySelector('.design-canvas').offsetWidth;
+    const exit = outgoing.animate([{ transform: `translate3d(${offset}px,0,0)` }, { transform: `translate3d(${-direction * distance}px,0,0)` }], options);
+    const enter = incoming.animate([{ transform: `translate3d(${direction * distance + offset}px,0,0)` }, { transform: 'translate3d(0,0,0)' }], options);
     slideAnimations = [exit, enter];
     Promise.all(slideAnimations.map(animation => animation.finished)).then(() => {
       if (activeScreen !== selected) return;
@@ -197,39 +211,129 @@ document.querySelectorAll('[data-screen]').forEach(button => button.addEventList
 const swipeSurface = document.querySelector('.design-canvas');
 let swipe = null;
 let ignoreClickUntil = 0;
-swipeSurface.addEventListener('touchstart', event => {
+let swipeFrame = 0;
+function resetSwipePreview() {
+  cancelAnimationFrame(swipeFrame);
+  swipeFrame = 0;
+  for (const screen of screens) {
+    const element = $(screen.id + '-screen');
+    element.style.removeProperty('transform');
+    element.classList.remove('screen-sliding');
+    element.hidden = screen !== activeScreen;
+    element.inert = screen !== activeScreen;
+    element.removeAttribute('aria-hidden');
+  }
+}
+function drawSwipe() {
+  swipeFrame = 0;
+  if (!swipe?.horizontal) return;
+  const currentIndex = screens.indexOf(activeScreen);
+  const direction = swipe.dx < 0 ? 1 : -1;
+  const neighbor = screens[currentIndex + direction];
+  const distance = swipe.distance;
+  const scale = swipe.scale;
+  const offset = swipe.dx / scale * (neighbor ? 1 : 0.2);
+  swipe.offset = offset;
+  swipe.neighbor = neighbor;
+  for (const screen of screens) {
+    const element = $(screen.id + '-screen');
+    const visible = screen === activeScreen || screen === neighbor;
+    element.hidden = !visible;
+    element.inert = screen !== activeScreen;
+    if (screen === activeScreen) element.removeAttribute('aria-hidden');
+    else element.setAttribute('aria-hidden', 'true');
+    element.classList.toggle('screen-sliding', visible);
+    if (visible) element.style.transform = `translate3d(${offset + (screen === neighbor ? direction * distance : 0)}px,0,0)`;
+  }
+}
+function cancelSwipe() {
   swipe = null;
+  resetSwipePreview();
+}
+swipeSurface.addEventListener('touchstart', event => {
+  if (swipe) cancelSwipe();
   if (event.touches.length !== 1 || document.querySelector('dialog[open]')) return;
-  if (event.target.closest('button, input, select, textarea, a, label, .status-bar, .navigation')) return;
+  if (slideAnimations.length) return;
+  if (event.target.closest('input, select, textarea, a, label')) return;
   const touch = event.touches[0];
   // Leave the screen edges available for Safari's back/forward gestures.
   if (touch.clientX < 24 || touch.clientX > innerWidth - 24) return;
-  swipe = { id: touch.identifier, x: touch.clientX, y: touch.clientY, started: performance.now(), horizontal: false };
+  swipe = {
+    id: touch.identifier, x: touch.clientX, y: touch.clientY, dx: 0,
+    started: performance.now(), horizontal: false, distance: swipeSurface.offsetWidth,
+    scale: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit')) || 1,
+  };
 }, { passive: true });
 swipeSurface.addEventListener('touchmove', event => {
   if (!swipe) return;
-  if (event.touches.length !== 1) { swipe = null; return; }
+  if (event.touches.length !== 1) { cancelSwipe(); return; }
   const touch = event.touches[0];
-  if (touch.identifier !== swipe.id) { swipe = null; return; }
+  if (touch.identifier !== swipe.id) { cancelSwipe(); return; }
   const dx = Math.abs(touch.clientX - swipe.x), dy = Math.abs(touch.clientY - swipe.y);
-  if (!swipe.horizontal && dy > 12 && dy > dx) { swipe = null; return; }
-  if (dx > 12 && dx > dy * 1.5) swipe.horizontal = true;
-  if (swipe.horizontal && event.cancelable) event.preventDefault();
+  if (!swipe.horizontal && dy > 8 && dy > dx) { cancelSwipe(); return; }
+  if (dx > 8 && dx > dy * 1.25) swipe.horizontal = true;
+  if (swipe.horizontal) {
+    if (event.cancelable) event.preventDefault();
+    swipe.dx = touch.clientX - swipe.x;
+    ignoreClickUntil = performance.now() + 400;
+    if (!swipeFrame) swipeFrame = requestAnimationFrame(drawSwipe);
+  }
 }, { passive: false });
 swipeSurface.addEventListener('touchend', event => {
   const gesture = swipe;
-  swipe = null;
-  if (!gesture || event.touches.length || performance.now() - gesture.started > 1000) return;
+  if (!gesture?.horizontal) { swipe = null; return; }
+  if (event.touches.length) { cancelSwipe(); return; }
   const touch = Array.from(event.changedTouches).find(t => t.identifier === gesture.id);
-  if (!touch) return;
-  const dx = touch.clientX - gesture.x, dy = touch.clientY - gesture.y;
-  if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-  const current = screens.findIndex(screen => '#' + screen.id === location.hash);
-  const next = Math.max(0, Math.min(screens.length - 1, Math.max(0, current) + (dx < 0 ? 1 : -1)));
+  if (!touch) { cancelSwipe(); return; }
+  gesture.dx = touch.clientX - gesture.x;
+  cancelAnimationFrame(swipeFrame);
+  drawSwipe();
+  swipe = null;
+  const elapsed = performance.now() - gesture.started;
+  const commit = gesture.neighbor && (Math.abs(gesture.dx) > Math.min(160, innerWidth * 0.18) || (Math.abs(gesture.dx) > 40 && Math.abs(gesture.dx) / elapsed > 0.45));
   ignoreClickUntil = performance.now() + 400;
-  location.hash = '#' + screens[next].id;
+  if (commit) {
+    const nextIndex = screens.indexOf(gesture.neighbor);
+    history.pushState(null, '', '#' + gesture.neighbor.id);
+    selectScreen(nextIndex, { offset: gesture.offset });
+  } else {
+    const element = $(activeScreen.id + '-screen');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion || !element.animate) { resetSwipePreview(); return; }
+    const direction = gesture.dx < 0 ? 1 : -1;
+    const distance = swipeSurface.offsetWidth;
+    const visible = [activeScreen, gesture.neighbor].filter(Boolean);
+    slideAnimations = visible.map(screen => {
+      const target = $(screen.id + '-screen');
+      const end = screen === activeScreen ? 0 : direction * distance;
+      return target.animate([{ transform: target.style.transform }, { transform: `translate3d(${end}px,0,0)` }], { duration: 180, easing: 'ease-out', fill: 'forwards' });
+    });
+    Promise.all(slideAnimations.map(animation => animation.finished)).then(() => {
+      slideAnimations.forEach(animation => animation.cancel());
+      slideAnimations = [];
+      resetSwipePreview();
+    }).catch(() => {});
+  }
 }, { passive: true });
-swipeSurface.addEventListener('touchcancel', () => { swipe = null; }, { passive: true });
+swipeSurface.addEventListener('touchcancel', cancelSwipe, { passive: true });
+window.addEventListener('resize', cancelSwipe);
+// Older iPadOS can rubber-band even with overflow:hidden. Allow only an inner
+// scroller that still has room in the requested direction, including dialogs.
+let lastTouchY = 0;
+document.addEventListener('touchstart', event => { if (event.touches.length === 1) lastTouchY = event.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchmove', event => {
+  if (event.touches.length !== 1 || !event.cancelable) return;
+  const y = event.touches[0].clientY;
+  const dy = y - lastTouchY;
+  lastTouchY = y;
+  if (event.target.closest('input[type="range"]')) return;
+  for (let node = event.target; node && node !== document.body; node = node.parentElement) {
+    if (node.scrollHeight <= node.clientHeight + 1) continue;
+    if (!/(auto|scroll)/.test(getComputedStyle(node).overflowY)) continue;
+    if ((dy > 0 && node.scrollTop > 0) || (dy < 0 && node.scrollTop + node.clientHeight < node.scrollHeight - 1)) return;
+  }
+  event.preventDefault();
+}, { passive: false });
 swipeSurface.addEventListener('click', event => {
   if (performance.now() < ignoreClickUntil) { event.preventDefault(); event.stopPropagation(); }
 }, true);

@@ -4,6 +4,9 @@ import { readFile } from 'node:fs/promises';
 
 const files = new Map([['/', 'index.html'], ['/index.html', 'index.html'], ['/state.js', 'state.js']]);
 files.set('/figma.html', 'figma.html');
+files.set('/responsive-layout.css', 'responsive-layout.css');
+files.set('/manifest.webmanifest', 'manifest.webmanifest');
+for (const size of [180, 192, 512]) files.set(`/assets/pwa/icon-${size}.png`, `assets/pwa/icon-${size}.png`);
 files.set('/figma-exact.css', 'figma-exact.css');
 files.set('/figma-exact.js', 'figma-exact.js');
 files.set('/figma-pages.js', 'figma-pages.js');
@@ -19,7 +22,7 @@ for (const filename of figmaAssets.files) {
   if (!/^[a-zA-Z0-9-]+\.(svg|png)$/.test(filename)) throw Error('Invalid Figma asset filename');
   files.set(`/assets/figma-home/${filename}`, `assets/figma-home/${filename}`);
 }
-const types = {ttf:'font/ttf',png:'image/png',svg:'image/svg+xml',html:'text/html; charset=utf-8',css:'text/css; charset=utf-8',js:'text/javascript; charset=utf-8'};
+const types = {webmanifest:'application/manifest+json',ttf:'font/ttf',png:'image/png',svg:'image/svg+xml',html:'text/html; charset=utf-8',css:'text/css; charset=utf-8',js:'text/javascript; charset=utf-8'};
 const port = Number(process.env.PORT || 5173);
 http.createServer(async (req,res) => {
   const url = new URL(req.url,'http://localhost');

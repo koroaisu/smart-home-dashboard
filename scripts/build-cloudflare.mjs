@@ -8,6 +8,8 @@ const output = join(root, 'cloudflare-dist/public');
 await rm(output, { recursive: true, force: true });
 await import('./build-figma-preview.mjs');
 const routes = [
+  'responsive-layout.css',
+  'manifest.webmanifest', 'assets/pwa/icon-180.png', 'assets/pwa/icon-192.png', 'assets/pwa/icon-512.png',
   'figma.html', 'figma-exact.css', 'figma-exact.js', 'figma-devices.css', 'figma-devices.js', 'figma-device-actions.js',
   'figma-pages.css', 'figma-pages.js', 'calendar-client.js', 'calendar-data.js', 'state.js', 'assets/fonts/DotGothic16-Regular.ttf',
 ];

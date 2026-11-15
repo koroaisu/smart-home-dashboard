@@ -1,0 +1,113 @@
+/* Shared tablet geometry. Spare width belongs to columns, not their gaps.
+   Keep content coordinates in design units so typography scales uniformly. */
+.design-canvas{
+  --page-left:calc(856px + var(--spread,0px) * .64);
+  --page-right:calc(457px + var(--spread,0px) * .36);
+  --music-left:calc(804px + var(--spread,0px) * .61);
+  --music-right:calc(509px + var(--spread,0px) * .39);
+  --device-left:calc(830px + var(--spread,0px) * .63);
+  --device-right:calc(467px + var(--spread,0px) * .37);
+  --home-side:calc(311px + var(--spread,0px) * .25);
+}
+/* Paint in CSS pixels, avoiding SVG border-image slicing differences in Safari.
+   Two overlapping paper rectangles leave a 4px stepped outline at every size. */
+.panel,.device-control-panel,.device-scenes,.device-select{isolation:isolate}
+.panel::before,.device-control-panel::before,.device-scenes::before,.device-select::before,
+.paper-panel::before,.album-art::before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  border:0;border-image:none;
+  background:
+    linear-gradient(var(--frame-paper,var(--paper)),var(--frame-paper,var(--paper))) center / calc(100% - 16px) calc(100% - 8px) no-repeat,
+    linear-gradient(var(--frame-paper,var(--paper)),var(--frame-paper,var(--paper))) center / calc(100% - 8px) calc(100% - 16px) no-repeat,
+    var(--line);
+  -webkit-clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px),0 4px,4px 4px);
+  clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px),0 4px,4px 4px);
+}
+.panel>.panel-art,.device-control-panel>.panel-art,.device-scenes>.panel-art,
+.device-select>.device-card-art{display:none}
+.device-select[aria-pressed=true]{--frame-paper:#f9edca}
+.album-art{--frame-paper:var(--sand)}
+
+/* Home: balanced side panels, center content stays centered as speech grows. */
+#home-screen>.outdoor,#home-screen>.agenda,#home-screen>.indoor,#home-screen>.devices{width:var(--home-side)}
+#home-screen>.center{left:0;right:auto;width:100%}
+#home-screen #date,#home-screen #clock,#home-screen .weather,#home-screen .weather-range,
+#home-screen #pet-speak,#home-screen .welcome,#home-screen .room-state{left:50%;transform:translateX(-50%)}
+#home-screen .speech{left:calc(var(--home-side) + 55px);width:calc(612px + var(--spread,0px) * .5)}
+#home-screen .speech>.panel-art{width:100%;height:100%}
+#home-screen #speech-text{width:auto;left:34px;right:34px}
+#home-screen .speech-tail{left:calc(50% + 47px)}
+#home-screen .rule{width:auto;right:26px}
+#home-screen .reading dd{left:auto;right:62px}
+#home-screen .reading .unit{left:auto;right:25px}
+#home-screen .comfort{left:auto;right:36px}
+#home-screen #add-task{left:auto;right:26px}
+#home-screen #task-list{width:auto;right:25px}
+#home-screen .device-row{width:100%}
+#home-screen .device-name{width:calc(100% - 145px)}
+#home-screen .power-badge{left:auto;right:21px}
+
+/* Devices: two flexible cards and a control column separated by a fixed gap. */
+.devices-screen .device-cards{width:calc(var(--device-left) + 28px);grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 26px}
+.devices-screen .device-select{width:100%}
+.devices-screen .card-power{left:auto;right:21px}
+.devices-screen>.device-control-panel{width:var(--device-right)}
+.devices-screen .devices-page-count{left:auto;right:28px}
+.devices-screen .control-power-badge{left:auto;right:50px}
+.devices-screen .control-rule,.devices-screen .control-range-row,.devices-screen .control-colors,
+.devices-screen .control-description,.devices-screen .control-power{width:auto;left:31px;right:31px}
+.devices-screen .control-value{left:calc(50% - 78px)}
+.devices-screen .control-unit{left:calc(50% + 33px)}
+.devices-screen .control-range-row input{width:calc(100% - 166px)}
+.devices-screen .control-colors>div{display:flex}
+.devices-screen .control-colors button{flex:1;min-width:0;width:auto}
+.devices-screen .device-scenes{width:var(--device-left)}
+.devices-screen .scene-buttons{left:31px;right:31px;gap:23px}
+.devices-screen .scene-buttons>div{flex:1;min-width:0;width:auto}
+.devices-screen .scene-buttons button{width:100%}
+
+/* Music: both columns grow while the 31px gap stays constant. */
+.interactive-page>.player,.interactive-page>.volume-panel{width:var(--music-left)}
+.interactive-page>.playlist,.interactive-page>.mood-panel{width:var(--music-right)}
+.interactive-page .album-art{left:50%;transform:translateX(-50%)}
+.interactive-page .player h2,.interactive-page .player .artist{width:auto;left:24px;right:24px}
+.interactive-page .player .seek{width:calc(100% - 98px);left:49px;right:49px}
+.interactive-page .time-row{width:auto;left:52px;right:61px}
+.interactive-page .transport{left:50%;transform:translateX(-50%)}
+.interactive-page #demo-volume{width:calc(100% - 467px)}
+.interactive-page #demo-volume-value{left:auto;right:48px}
+.interactive-page #demo-playlist{width:auto;left:21px;right:21px}
+.interactive-page .track{width:100%}
+.interactive-page .track>span:nth-child(2){right:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.interactive-page .mood-buttons{left:31px;right:31px}
+.interactive-page .mood-buttons button{flex:1;width:auto;min-width:0}
+.interactive-page .mood-panel>p{width:auto;left:47px;right:31px}
+
+/* Topics, calendar and notifications use one shared column definition. */
+.interactive-page>.topic-feature,.interactive-page>.topic-list-panel,
+.interactive-page>.calendar-panel,.interactive-page>.notice-list-panel{width:var(--page-left)}
+.interactive-page>.weather-table,.interactive-page>.pet-note,.interactive-page>.selected-day-panel,
+.interactive-page>.upcoming,.interactive-page>.calendar-storage,.interactive-page>.notification-detail,
+.interactive-page>.notice-tip,.interactive-page>.topic-greeting{width:var(--page-right)}
+.interactive-page #notice-settings{left:auto;right:0;width:var(--page-right)}
+.interactive-page .topic-pet{left:calc(100% - var(--page-right) / 2);transform:translateX(-50%)}
+.interactive-page #topic-list,.interactive-page .weather-table dl{width:auto;left:31px;right:31px}
+.interactive-page .topic-feature h2{width:auto;left:61px;right:61px}
+.interactive-page .topic-feature p{width:auto;left:58px;right:180px}
+.interactive-page .topic-row p{right:42px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.interactive-page .calendar-toolbar,.interactive-page .calendar-grid,.interactive-page .calendar-foot{width:auto;left:31px;right:31px}
+.interactive-page .calendar-toolbar h2{left:50%;transform:translateX(-50%)}
+.interactive-page .calendar-grid button{width:calc(100% - 4px)}
+.interactive-page .selected-day-panel .day-title{width:auto;left:31px;right:31px}
+.interactive-page #calendar-agenda{width:auto;left:49px;right:46px}
+.interactive-page #calendar-add-day,.interactive-page #calendar-upcoming{width:auto;left:31px;right:31px}
+.interactive-page .calendar-storage #calendar-source-status{width:calc(100% - 225px)}
+.interactive-page #notices-list{width:auto;left:21px;right:21px}
+.interactive-page .notification-row strong{width:auto;left:63px;right:45px}
+.interactive-page .notification-row>small{width:auto;left:53px;right:45px}
+.interactive-page .notification-detail h2{width:auto;left:49px;right:49px}
+.interactive-page .notification-detail .body,.interactive-page .notification-detail button{width:auto;left:31px;right:31px}
+.interactive-page .notice-tip p{left:31px;right:31px}
+
+/* Center the navigation frame within the usable footer, excluding safe area. */
+body>.navigation nav{top:calc(var(--footer-height) / 2);transform:translate(-50%,-50%) scale(var(--fit));transform-origin:center}
