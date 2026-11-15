@@ -4,6 +4,8 @@ import { mountPages } from './figma-pages.js';
 import { deviceDefinitions, dateKey, validDate } from './state.js';
 import { mountDeviceScreen } from './figma-devices.js';
 import { weatherIconFor } from './weather-icons.js';
+import { resolveLocation, mihamaLocation } from './weather-client.js';
+import { mountWeather } from './weather-display.js';
 
 const $ = id => document.getElementById(id);
 // Keep navigation outside the transformed canvas so it anchors to the viewport.
@@ -11,12 +13,12 @@ document.body.append(document.querySelector('.navigation'));
 // Isolated storage keeps this design prototype from changing the existing dashboard.
 const storageKey = 'sekhmet-figma-exact-v1';
 const referenceMode = new URLSearchParams(location.search).get('reference') === '1';
-const defaultState = () => ({ location: '横浜市', tasks: [], colorTemperatures: { floor: 'warm', ceiling: 'warm' }, devices: Object.fromEntries(deviceDefinitions.map(d => [d.id, { on: ['floor', 'ceiling'].includes(d.id), value: d.value }])) });
+const defaultState = () => ({ location: '福井県美浜町', weatherLocationVersion: 1, tasks: [], colorTemperatures: { floor: 'warm', ceiling: 'warm' }, devices: Object.fromEntries(deviceDefinitions.map(d => [d.id, { on: ['floor', 'ceiling'].includes(d.id), value: d.value }])) });
 let state = defaultState();
 if (!referenceMode) {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    if (typeof saved?.location === 'string') state.location = saved.location.slice(0, 40);
+    if (saved?.weatherLocationVersion === 1 && typeof saved?.location === 'string') state.location = saved.location.slice(0, 40);
     for (const id of ['floor', 'ceiling']) if (['warm', 'neutral', 'cool'].includes(saved?.colorTemperatures?.[id])) state.colorTemperatures[id] = saved.colorTemperatures[id];
     for (const def of deviceDefinitions) {
       const d = saved?.devices?.[def.id];
@@ -62,7 +64,8 @@ window.visualViewport?.addEventListener('resize', fitDesign);
 function tick() {
   if (referenceMode) return;
   const now = new Date();
-  const icon = weatherIconFor($('current-weather').dataset.condition, now.getHours());
+  const day = $('current-weather').dataset.isDay;
+  const icon = weatherIconFor($('current-weather').dataset.condition, day === '0' ? 0 : day === '1' ? 12 : now.getHours());
   if ($('weather-icon').getAttribute('src') !== icon) $('weather-icon').setAttribute('src', icon);
   const time = new Intl.DateTimeFormat('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
   $('clock').textContent = $('header-clock').textContent = time;
@@ -146,7 +149,34 @@ $('device-dialog').addEventListener('close',()=>document.querySelector(`[data-de
 $('task-form').addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;const title=form.elements.title.value.trim();if(!title)return;state.tasks.push({id:crypto.randomUUID(),title,date:form.elements.date.value,time:form.elements.time.value,done:false});save();renderTasks();$('task-dialog').close();form.reset();notify('予定を追加しました。');});
 $('location-label').textContent=state.location;
 $('location-button').addEventListener('click',()=>{$('location-form').elements.location.value=state.location;$('location-dialog').showModal();});
-$('location-form').addEventListener('submit',event=>{event.preventDefault();const label=event.currentTarget.elements.location.value.trim();if(!label)return;state.location=label;$('location-label').textContent=label;save();$('location-dialog').close();});
+$('location-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const form = event.currentTarget;
+  const label = form.elements.location.value.trim();
+  if (!label) return;
+  const button = form.querySelector('[type="submit"]');
+  button.disabled = true;
+  try {
+    const place = await resolveLocation(label);
+    state.location = label; $('location-label').textContent = label; save();
+    weatherClient?.setLocation(place);
+    $('location-dialog').close();
+  } catch (error) { notify(error.message); }
+  finally { button.disabled = false; }
+});
+const weatherClient = referenceMode ? null : mountWeather();
+if (weatherClient) {
+  const initialLocation = state.location;
+  if (initialLocation === '福井県美浜町') weatherClient.setLocation(mihamaLocation);
+  else resolveLocation(initialLocation).then(place => {
+    if (state.location === initialLocation) weatherClient.setLocation(place);
+  }).catch(() => {
+    if (state.location !== initialLocation) return;
+    state.location = '福井県美浜町'; $('location-label').textContent = state.location; save();
+    weatherClient.setLocation(mihamaLocation);
+    notify('保存地域を取得できないため、福井県美浜町に戻しました。');
+  });
+}
 const phrases=['今日は、お部屋を整える日にしませんか？','お部屋は快適な状態です。','少しひと息つきませんか？'];let phraseIndex=0;
 $('pet-speak').addEventListener('click',()=>{$('speech-text').textContent=phrases[++phraseIndex%phrases.length];});
 const deviceScreen = mountDeviceScreen(state, persist => { if (persist) save(); renderDevices(); }, notify);

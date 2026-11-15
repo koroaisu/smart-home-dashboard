@@ -11,6 +11,7 @@ const routes = [
   'responsive-layout.css',
   'typography.css',
   'weather-icons.js',
+  'weather-client.js', 'weather-display.js',
   ...['weather_thunderstorm.png', 'moon_yellow.png', 'weather_cloudy_white.png', 'weather_rain_cloud_light.png', 'weather_rain_umbrella_heavy.png', 'weather_rain_umbrella_light.png', 'weather_sunny.png'].map(name => `assets/weather/${name}`),
   'manifest.webmanifest', 'assets/pwa/icon-180.png', 'assets/pwa/icon-192.png', 'assets/pwa/icon-512.png',
   'figma.html', 'figma-exact.css', 'figma-exact.js', 'figma-devices.css', 'figma-devices.js', 'figma-device-actions.js',

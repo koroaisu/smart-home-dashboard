@@ -7,6 +7,8 @@ files.set('/figma.html', 'figma.html');
 files.set('/responsive-layout.css', 'responsive-layout.css');
 files.set('/typography.css', 'typography.css');
 files.set('/weather-icons.js', 'weather-icons.js');
+files.set('/weather-client.js', 'weather-client.js');
+files.set('/weather-display.js', 'weather-display.js');
 for (const name of ['weather_thunderstorm.png', 'moon_yellow.png', 'weather_cloudy_white.png', 'weather_rain_cloud_light.png', 'weather_rain_umbrella_heavy.png', 'weather_rain_umbrella_light.png', 'weather_sunny.png']) files.set(`/assets/weather/${name}`, `assets/weather/${name}`);
 files.set('/manifest.webmanifest', 'manifest.webmanifest');
 for (const size of [180, 192, 512]) files.set(`/assets/pwa/icon-${size}.png`, `assets/pwa/icon-${size}.png`);

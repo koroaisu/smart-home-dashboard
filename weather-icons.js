@@ -7,8 +7,7 @@ const icons = {
   thunderstorm: 'weather_thunderstorm.png',
 };
 
-// The current weather is demo data. This mapping can also be used by a future
-// weather provider; the clock only changes the clear-sky illustration at night.
+// The weather provider supplies the condition and whether the target location is in daylight.
 export function weatherIconFor(condition, hour) {
   const night = Number.isFinite(hour) && (hour < 6 || hour >= 18);
   const file = condition === 'sunny' && night ? 'moon_yellow.png' : icons[condition] || icons.cloudy;
