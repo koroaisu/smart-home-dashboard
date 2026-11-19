@@ -6,6 +6,7 @@ import { mountDeviceScreen } from './figma-devices.js';
 import { weatherIconFor } from './weather-icons.js';
 import { resolveLocation, mihamaLocation } from './weather-client.js';
 import { mountWeather } from './weather-display.js';
+import { createSwitchBotClient, switchBotStatus } from './switchbot-client.js';
 
 const $ = id => document.getElementById(id);
 // Keep navigation outside the transformed canvas so it anchors to the viewport.
@@ -107,9 +108,17 @@ function renderTasks() {
   }
 }
 let selectedDevice = null;
+let switchbotClient = null;
+const liveDevice = id => !referenceMode && id === 'ceiling';
+const liveReady = () => Boolean(switchbotClient?.model.configured && switchbotClient.model.group?.available > 0);
 function deviceStatus(def) {
   const d = state.devices[def.id];
-  return !d.on ? 'オフ' : `${d.value}${def.unit}`;
+  if (liveDevice(def.id)) {
+    const model = switchbotClient?.model;
+    if (model?.phase === 'ready') return model.group?.mixed ? '設定混在' : d.on ? `${d.value}%` : 'オフ';
+    return ({ loading: '接続確認中', unconfigured: '未接続', sending: '送信中', sent: '確認待ち', error: '未確認' })[model?.phase] || '接続確認中';
+  }
+  return !d.on ? 'デモ / オフ' : `デモ / ${d.value}${def.unit}`;
 }
 function renderDevices() {
   const list = $('device-summary'); list.replaceChildren();
@@ -121,14 +130,14 @@ function renderDevices() {
     icon.src=`/assets/figma-home/${def.id === 'ac' ? '71000' : ['floor','ceiling'].includes(def.id) ? 'a738a' : '09f9b'}.svg`;
     const name=document.createElement('span');name.className='device-name';name.textContent=def.name;
     const status=document.createElement('span');status.className='device-status';status.textContent=deviceStatus(def);
-    const power=document.createElement('span');power.className='power-badge';power.textContent=state.devices[def.id].on?'ON':'OFF';
+    const power=document.createElement('span');power.className='power-badge';power.textContent=liveDevice(def.id) && !liveReady() ? '—' : state.devices[def.id].on?'ON':'OFF';
     row.append(icon,name,status,power);row.addEventListener('click',()=>openDevice(def));list.append(row);
   });
   const vacuum=document.createElement('button');vacuum.className='device-row';vacuum.style.top='704px';vacuum.setAttribute('aria-label','掃除機の状態');
   const icon=document.createElement('img');icon.src='/assets/figma-home/09f9b.svg';icon.alt='';icon.className='device-icon';
   for (const [className,text] of [['device-name','掃除機'],['device-status','待機'],['power-badge','待機']]) { const span=document.createElement('span');span.className=className;span.textContent=text;vacuum.append(span); }
   vacuum.prepend(icon);vacuum.addEventListener('click',()=>notify('掃除機は待機中です。'));list.append(vacuum);
-  $('device-count').textContent=`${Object.values(state.devices).filter(d=>d.on).length}台が稼働中`;
+  $('device-count').textContent=referenceMode ? `${Object.values(state.devices).filter(d=>d.on).length}台が稼働中` : '天井照明4灯 / 他はデモ';
 }
 function refreshDeviceDialog() {
   const d=state.devices[selectedDevice.id];
@@ -139,11 +148,16 @@ function refreshDeviceDialog() {
   $('device-range').value=d.value;$('device-range').disabled=!d.on;
   $('device-range').setAttribute('aria-label',selectedDevice.setting);
   $('device-value').textContent=`${d.value}${selectedDevice.unit}`;
+  if (liveDevice(selectedDevice.id)) {
+    $('device-power').disabled = !liveReady() || switchbotClient.model.busy;
+    $('device-range').disabled = !d.on || !liveReady(); $('device-range').min = 1;
+    $('device-title').textContent = `${selectedDevice.name} / ${switchBotStatus(switchbotClient.model)}`;
+  } else $('device-power').disabled = false;
 }
 function openDevice(def) { selectedDevice=def;refreshDeviceDialog();$('device-dialog').showModal(); }
-$('device-power').addEventListener('click',()=>{const d=state.devices[selectedDevice.id];d.on=!d.on;save();refreshDeviceDialog();renderDevices();deviceScreen.render();});
-$('device-range').addEventListener('input',()=>{state.devices[selectedDevice.id].value=Number($('device-range').value);refreshDeviceDialog();renderDevices();deviceScreen.render();});
-$('device-range').addEventListener('change',save);
+$('device-power').addEventListener('click',()=>{const d=state.devices[selectedDevice.id];d.on=!d.on;if(liveDevice(selectedDevice.id))switchbotClient.send('power',d.on);save();refreshDeviceDialog();renderDevices();deviceScreen.render();});
+$('device-range').addEventListener('input',()=>{if(liveDevice(selectedDevice.id))switchbotClient.preview();state.devices[selectedDevice.id].value=Number($('device-range').value);refreshDeviceDialog();renderDevices();deviceScreen.render();});
+$('device-range').addEventListener('change',()=>{save();if(liveDevice(selectedDevice.id))switchbotClient.send('brightness',state.devices[selectedDevice.id].value);});
 document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 $('device-dialog').addEventListener('close',()=>document.querySelector(`[data-device="${selectedDevice?.id}"]`)?.focus());
 $('task-form').addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;const title=form.elements.title.value.trim();if(!title)return;state.tasks.push({id:crypto.randomUUID(),title,date:form.elements.date.value,time:form.elements.time.value,done:false});save();renderTasks();$('task-dialog').close();form.reset();notify('予定を追加しました。');});
@@ -179,7 +193,27 @@ if (weatherClient) {
 }
 const phrases=['今日は、お部屋を整える日にしませんか？','お部屋は快適な状態です。','少しひと息つきませんか？'];let phraseIndex=0;
 $('pet-speak').addEventListener('click',()=>{$('speech-text').textContent=phrases[++phraseIndex%phrases.length];});
-const deviceScreen = mountDeviceScreen(state, persist => { if (persist) save(); renderDevices(); }, notify);
+const liveControls = referenceMode ? null : {
+  ready: liveReady, model: () => switchbotClient?.model,
+  label: () => switchBotStatus(switchbotClient?.model || { phase: 'loading' }),
+  send: (action, value) => switchbotClient.send(action, value),
+  preview: () => switchbotClient.preview(), refresh: () => switchbotClient.refresh(),
+};
+const deviceScreen = mountDeviceScreen(state, persist => { if (persist) save(); renderDevices(); }, notify, liveControls);
+let lastBulbGroup;
+switchbotClient = referenceMode ? null : createSwitchBotClient({ notify, onChange(model) {
+  const group = model.group;
+  if (group && group !== lastBulbGroup) {
+    lastBulbGroup = group;
+    if (typeof group.on === 'boolean') state.devices.ceiling.on = group.on;
+    if (Number.isFinite(group.brightness)) state.devices.ceiling.value = group.brightness;
+    const temperature = group.colorTemperature;
+    if (Number.isFinite(temperature)) state.colorTemperatures.ceiling = temperature < 4000 ? 'warm' : temperature < 5750 ? 'neutral' : 'cool';
+  }
+  renderDevices(); deviceScreen.render();
+  if (selectedDevice && $('device-dialog').open) refreshDeviceDialog();
+} });
+switchbotClient?.start();
 let pages;
 const googleCalendar = createCalendarClient({ disabled: referenceMode, onChange() { renderTasks(); pages?.renderCalendar(); } });
 pages = mountPages(state, save, renderTasks, notify, referenceMode, googleCalendar);

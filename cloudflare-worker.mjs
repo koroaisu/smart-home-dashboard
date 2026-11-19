@@ -1,7 +1,8 @@
 import { handleCalendarRequest } from './calendar-cloud.mjs';
 import { verifyCloudflareAccess } from './cloudflare-access.mjs';
+import { handleSwitchBotRequest } from './switchbot-cloud.mjs';
 
-export function createCloudflareWorker({ verify = verifyCloudflareAccess, calendar = handleCalendarRequest } = {}) {
+export function createCloudflareWorker({ verify = verifyCloudflareAccess, calendar = handleCalendarRequest, switchbot = handleSwitchBotRequest } = {}) {
   return {
     async fetch(request, env) {
       try {
@@ -9,6 +10,8 @@ export function createCloudflareWorker({ verify = verifyCloudflareAccess, calend
         // before both HTML/assets and API requests, including unprotected origins.
         const access = await verify(request, env);
         if (!access.ok) return Response.json({ error: access.error }, { status: access.status, headers: { 'Cache-Control': 'private, no-store' } });
+        const switchbotResponse = await switchbot(request, env);
+        if (switchbotResponse) return switchbotResponse;
         const calendarResponse = await calendar(request, env);
         if (calendarResponse) return calendarResponse;
         if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405 });
